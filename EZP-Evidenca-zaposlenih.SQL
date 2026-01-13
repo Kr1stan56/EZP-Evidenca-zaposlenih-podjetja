@@ -20,7 +20,8 @@ CREATE TABLE "zaposleni"
   "datum_zasposlitve" Date,
   "kraj_id" Integer NOT NULL,
   "oddelek_id" Integer NOT NULL,
-  "delovno_mesto_id" Integer NOT NULL
+  "delovno_mesto_id" Integer NOT NULL,
+  "izobrazba_id" Integer
 )
 WITH (
   autovacuum_enabled=true)
@@ -33,6 +34,9 @@ CREATE INDEX "IX_Relationship2" ON "zaposleni" ("oddelek_id")
 ;
 
 CREATE INDEX "IX_Relationship3" ON "zaposleni" ("delovno_mesto_id")
+;
+
+CREATE INDEX "IX_Relationship4" ON "zaposleni" ("izobrazba_id")
 ;
 
 ALTER TABLE "zaposleni" ADD CONSTRAINT "PK_zaposleni" PRIMARY KEY ("id")
@@ -129,6 +133,21 @@ WITH (
 ALTER TABLE "admin_users" ADD CONSTRAINT "PK_admin_users" PRIMARY KEY ("id")
 ;
 
+-- Table Izobrazba
+
+CREATE TABLE "Izobrazba"
+(
+  "id" Serial NOT NULL,
+  "naziv" Character varying(50) NOT NULL,
+  "opis" Text
+)
+WITH (
+  autovacuum_enabled=true)
+;
+
+ALTER TABLE "Izobrazba" ADD CONSTRAINT "PK_Izobrazba" PRIMARY KEY ("id")
+;
+
 -- Create foreign keys (relationships) section -------------------------------------------------
 
 ALTER TABLE "zaposleni"
@@ -151,6 +170,14 @@ ALTER TABLE "zaposleni"
   ADD CONSTRAINT "Relationship3"
     FOREIGN KEY ("delovno_mesto_id")
     REFERENCES "delovna_mesta" ("id")
+      ON DELETE NO ACTION
+      ON UPDATE NO ACTION
+;
+
+ALTER TABLE "zaposleni"
+  ADD CONSTRAINT "Relationship4"
+    FOREIGN KEY ("izobrazba_id")
+    REFERENCES "Izobrazba" ("id")
       ON DELETE NO ACTION
       ON UPDATE NO ACTION
 ;
