@@ -10,7 +10,7 @@ public class Database {
     public void connect() throws SQLException, ClassNotFoundException {
         Class.forName("org.postgresql.Driver");
         conn = DriverManager.getConnection(
-                "jdbc:postgresql://localhost:5432/ezp",
+                "jdbc:postgresql://localhost:5432/postgres",
                 "postgres",
                 "root"
         );
