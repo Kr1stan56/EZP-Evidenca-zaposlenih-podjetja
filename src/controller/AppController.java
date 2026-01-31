@@ -22,7 +22,7 @@ public class AppController {
             showLoginWindow();
 
         } catch (Exception e) {
-            System.out.println(null,"Napaka: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Napaka pri zagonu: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -39,7 +39,7 @@ public class AppController {
         String password = new String(loginWindow.getTxtPassword().getPassword());
 
         if (username.isEmpty() || password.isEmpty()) {
-            JOptionPane.showMessageDialog(loginWindow,"Izpolni vsa polja!");
+            JOptionPane.showMessageDialog(loginWindow, "Izpolni vsa polja!");
             return;
         }
 
@@ -49,13 +49,14 @@ public class AppController {
             if (loginSuccessful) {
                 loginWindow.dispose();
 
-                new MainWindow();
+                // Dodaj parameter db v MainWindow konstruktor
+                new MainWindow(db);
             } else {
-                JOptionPane.showMessageDialog("Napačno uporabniško ime ali geslo");
+                JOptionPane.showMessageDialog(loginWindow, "Napačno uporabniško ime ali geslo");
             }
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog("Napaka: " + e.getMessage());
+            JOptionPane.showMessageDialog(loginWindow, "Napaka: " + e.getMessage());
         }
     }
 }

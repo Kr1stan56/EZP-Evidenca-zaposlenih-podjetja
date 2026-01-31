@@ -14,7 +14,11 @@ public class Database {
                 "postgres",
                 "root"
         );
+        if (conn != null && !conn.isClosed()) {
+            System.out.println("[DB] Uspešno povezan na PostgreSQL");
+        }
     }
+
 
     public Connection getConnection() {
         return conn;
