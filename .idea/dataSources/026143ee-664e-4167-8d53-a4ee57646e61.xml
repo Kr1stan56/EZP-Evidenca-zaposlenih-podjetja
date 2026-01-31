@@ -3,7 +3,7 @@
   <database-model serializer="dbm" dbms="POSTGRES" family-id="POSTGRES" format-version="4.53">
     <root id="1">
       <DateStyle>dmy</DateStyle>
-      <IntrospectionStateNumber>1956</IntrospectionStateNumber>
+      <IntrospectionStateNumber>2000</IntrospectionStateNumber>
       <ServerVersion>17.2</ServerVersion>
       <StartupTime>1769190720</StartupTime>
       <TimeZones>true ACDT
@@ -804,7 +804,7 @@ false Zulu
 14650||10|C|G
 14650||-9223372036854775808|U|G
 14650||10|U|G</Grants>
-      <IntrospectionStateNumber>1956</IntrospectionStateNumber>
+      <IntrospectionStateNumber>2000</IntrospectionStateNumber>
       <ObjectId>5</ObjectId>
       <OwnerName>postgres</OwnerName>
     </database>
@@ -4226,8 +4226,8 @@ false Zulu
     <schema id="264" parent="2" name="public">
       <Comment>standard public schema</Comment>
       <Current>1</Current>
-      <IntrospectionStateNumber>1956</IntrospectionStateNumber>
-      <LastIntrospectionLocalTimestamp>2026-01-31.20:26:47</LastIntrospectionLocalTimestamp>
+      <IntrospectionStateNumber>2000</IntrospectionStateNumber>
+      <LastIntrospectionLocalTimestamp>2026-01-31.21:18:16</LastIntrospectionLocalTimestamp>
       <ObjectId>2200</ObjectId>
       <StateNumber>1846</StateNumber>
       <OwnerName>pg_database_owner</OwnerName>
@@ -4253,11 +4253,11 @@ false Zulu
       <OwnerName>postgres</OwnerName>
     </routine>
     <routine id="267" parent="264" name="get_all_employees">
-      <ObjectId>16702</ObjectId>
-      <ResultsDefinition>TABLE(id integer, ime character varying, priimek character varying, email character varying, telefon character varying, placa real, datum_zasposlitve date, delovno_mesto character varying, oddelek character varying)</ResultsDefinition>
+      <ObjectId>16705</ObjectId>
+      <ResultsDefinition>TABLE(id integer, ime character varying, priimek character varying, email character varying, telefon character varying, placa real, datum_zaposlitve date, delovno_mesto character varying, oddelek character varying, kraj character varying, izobrazba character varying)</ResultsDefinition>
       <ReturnsSet>1</ReturnsSet>
-      <SourceTextLength>380</SourceTextLength>
-      <StateNumber>1950</StateNumber>
+      <SourceTextLength>545</SourceTextLength>
+      <StateNumber>1999</StateNumber>
       <LanguageName>plpgsql</LanguageName>
       <OwnerName>postgres</OwnerName>
     </routine>
@@ -4447,7 +4447,7 @@ false Zulu
     </argument>
     <argument id="297" parent="267">
       <ArgumentDirection>T</ArgumentDirection>
-      <StoredType>table(&quot;id&quot; integer, &quot;ime&quot; varchar, &quot;priimek&quot; varchar, &quot;email&quot; varchar, &quot;telefon&quot; varchar, &quot;placa&quot; real, &quot;datum_zasposlitve&quot; date, &quot;delovno_mesto&quot; varchar, &quot;oddelek&quot; varchar)|0v</StoredType>
+      <StoredType>table(&quot;id&quot; integer, &quot;ime&quot; varchar, &quot;priimek&quot; varchar, &quot;email&quot; varchar, &quot;telefon&quot; varchar, &quot;placa&quot; real, &quot;datum_zaposlitve&quot; date, &quot;delovno_mesto&quot; varchar, &quot;oddelek&quot; varchar, &quot;kraj&quot; varchar, &quot;izobrazba&quot; varchar)|0v</StoredType>
     </argument>
     <argument id="298" parent="268">
       <ArgumentDirection>T</ArgumentDirection>
@@ -4777,9 +4777,9 @@ false Zulu
       <StoredType>real|0s</StoredType>
       <TypeId>700</TypeId>
     </column>
-    <column id="346" parent="285" name="datum_zasposlitve">
+    <column id="346" parent="285" name="datum_zaposlitve">
       <Position>7</Position>
-      <StateNumber>1862</StateNumber>
+      <StateNumber>1958</StateNumber>
       <StoredType>date|0s</StoredType>
       <TypeId>1082</TypeId>
     </column>

@@ -16,32 +16,35 @@ public class MainWindow extends JFrame {
     private JButton deleteButton;
     private JButton refreshButton;
     private Database db;
-
-    public MainWindow(Database db) {
+    private int RowHieght = 25;
+    public MainWindow(Database db) throws Exception{
         this.db = db;
 
         setTitle("EZP – Evidencia zaposlenih podjetja");
         setSize(1000, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setVisible(true);
 
         setupWindow();
-        loadEmployeeData();
+        try {
+            loadEmployeeData();
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Napaka", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void setupWindow() {
         JPanel mainPanel = new JPanel(new BorderLayout());
 
-        // Naslov
         JLabel titleLabel = new JLabel("Seznam Zaposlenih");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
         JPanel titlePanel = new JPanel();
         titlePanel.add(titleLabel);
 
-        // Gumbi
         JPanel buttonPanel = createButtonPanel();
 
-        // Tabela
         employeeTable = createEmployeeTable();
         JScrollPane tableScrollPane = new JScrollPane(employeeTable);
 
@@ -65,7 +68,15 @@ public class MainWindow extends JFrame {
         addButton.addActionListener(e -> addEmployee());
         editButton.addActionListener(e -> editEmployee());
         deleteButton.addActionListener(e -> deleteEmployee());
-        refreshButton.addActionListener(e -> loadEmployeeData());
+        refreshButton.addActionListener(e -> {
+            try {
+                loadEmployeeData();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, ex.getMessage(), "Napaka", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
 
         panel.add(addButton);
         panel.add(editButton);
@@ -76,42 +87,61 @@ public class MainWindow extends JFrame {
     }
 
     private JTable createEmployeeTable() {
-        String[] columnNames = {
-                "ID", "Ime", "Priimek", "Delovno Mesto", "Oddelek", "Plača", "Datum Zaposlitve"
+        String[] columns = {
+                "Ime", "Priimek", "Telefon", "Plača", "Kraj"
         };
 
-        DefaultTableModel model = new DefaultTableModel(columnNames, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+        DefaultTableModel model = new DefaultTableModel(columns, 0) {
+            @Override public boolean isCellEditable(int row, int column) { return false; }
         };
 
         JTable table = new JTable(model);
-        table.setRowHeight(30);
-
-        // Skrijemo ID stolpec
-        table.removeColumn(table.getColumnModel().getColumn(0));
-
+        table.setRowHeight(RowHieght);
         return table;
     }
 
-    private void loadEmployeeData() {
-        try {
-            Connection conn = db.getConnection();
-
-            // String sql = "SELECT * FROM get_all_employees()";
-
-            // TODO: Implementiraj SQL za pridobitev zaposlenih
 
 
+    private void loadEmployeeData() throws Exception {
+        Connection conn = db.getConnection();
 
-            conn.close();
-
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Napaka: " + e.getMessage(), "Napaka", JOptionPane.ERROR_MESSAGE);
+        if (conn == null || conn.isClosed()) {
+            throw new IllegalStateException("DB connection ni odprta");
         }
+
+        String sql = "SELECT * FROM get_all_employees()";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+
+        DefaultTableModel model = (DefaultTableModel) employeeTable.getModel();
+        model.setRowCount(0);
+
+        while (rs.next()) {
+            Object[] row = {
+                    rs.getInt("id"),
+                    rs.getString("ime"),
+                    rs.getString("priimek"),
+                    rs.getString("email"),
+                    rs.getString("telefon"),
+                    rs.getFloat("placa"),
+                    rs.getDate("datum_zaposlitve"),
+                    rs.getString("delovno_mesto"),
+                    rs.getString("oddelek"),
+                    rs.getString("kraj"),
+                    rs.getString("izobrazba")
+            };
+            model.addRow(row);
+        }
+
+        rs.close();
+        ps.close();
+        //conn.close();
     }
+
+
+
+
+
 
     private void addEmployee() {
         try {
