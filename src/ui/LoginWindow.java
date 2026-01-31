@@ -11,7 +11,6 @@ public class LoginWindow extends JFrame {
 
 
 
-
     public LoginWindow() {
         setTitle("EZP – Prijava");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -42,6 +41,8 @@ public class LoginWindow extends JFrame {
 
         btnLogin = new JButton("Prijava");
 
+
+
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
         panel.add(lblTitle, gbc);
 
@@ -68,4 +69,5 @@ public class LoginWindow extends JFrame {
     public JTextField getTxtUsername() { return txtUsername; }
     public JPasswordField getTxtPassword() { return txtPassword; }
     public JButton getBtnLogin() { return btnLogin; }
+
 }

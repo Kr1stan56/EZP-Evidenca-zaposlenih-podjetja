@@ -1,0 +1,14 @@
+    private JButton btnRegister;
+
+
+
+        btnRegister = new JButton("Registracija");
+
+
+        gbc.gridy++;
+        gbc.gridwidth = 1;
+        panel.add(btnRegister, gbc);
+        add(panel);
+
+
+    public JButton getBtnRegister(){return btnRegister;}

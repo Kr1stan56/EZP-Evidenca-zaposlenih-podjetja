@@ -14,18 +14,27 @@ public class AuthService {
     }
 
     public boolean login(String username, String password) throws Exception {
+
         String sql = "SELECT password FROM login_admin(?)";
 
-        Connection conn = db.getConnection();
-        PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setString(1, username);
+        try (Connection conn = db.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        ResultSet rs = ps.executeQuery();
+            ps.setString(1, username);
 
-        if (!rs.next()) return false;
+            try (ResultSet rs = ps.executeQuery()) {
 
-        String hash = rs.getString("password");
-        return BCrypt.checkpw(password, hash);
+                if (!rs.next()) return false;
+
+                String hash = rs.getString("password");
+                return BCrypt.checkpw(password, hash);
+            }
+        }
     }
+
+
+
+
+
 
 }
