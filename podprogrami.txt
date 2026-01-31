@@ -1,0 +1,132 @@
+-- Primer PL/pgSQL funkcije v PostgreSQL
+CREATE OR REPLACE FUNCTION login_admin(p_username VARCHAR)
+RETURNS TABLE(password VARCHAR) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT u.password
+    FROM admin_users u
+    WHERE u.username = p_username;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION register_user(
+    p_username TEXT,
+    p_password_hash TEXT,
+    p_email TEXT
+)
+RETURNS BOOLEAN AS $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM admin_users WHERE username = p_username) THEN
+        RETURN FALSE;
+    END IF;
+
+    INSERT INTO admin_users(username, password, email)
+    VALUES (p_username, p_password_hash, p_email);
+
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+CREATE OR REPLACE FUNCTION get_all_employees()
+RETURNS TABLE(
+    id INT,
+    ime VARCHAR,
+    priimek VARCHAR,
+    email VARCHAR,
+    telefon VARCHAR,
+    placa REAL,
+    datum_zasposlitve DATE,
+    delovno_mesto VARCHAR,
+    oddelek VARCHAR
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        z.id,
+        z.ime,
+        z.priimek,
+        z.email,
+        z.telefon,
+        z.placa,
+        z.datum_zasposlitve,
+        dm.naziv as delovno_mesto,
+        o.ime as oddelek
+    FROM zaposleni z
+    JOIN delovna_mesta dm ON z.delovno_mesto_id = dm.id
+    JOIN oddelki o ON z.oddelek_id = o.id
+    ORDER BY z.priimek, z.ime;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION add_employee(
+    p_ime VARCHAR,
+    p_priimek VARCHAR,
+    p_email VARCHAR,
+    p_telefon VARCHAR,
+    p_placa REAL,
+    p_datum DATE,
+    p_kraj_id INT,
+    p_oddelek_id INT
+) RETURNS VOID AS $$
+BEGIN
+    INSERT INTO zaposleni (ime, priimek, email, telefon, placa, datum_zasposlitve, kraj_id, oddelek_id, delovno_mesto_id)
+    VALUES (p_ime, p_priimek, p_email, p_telefon, p_placa, p_datum, p_kraj_id, p_oddelek_id, 1);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION delete_employee(p_id INT)
+RETURNS VOID AS $$
+BEGIN
+    DELETE FROM zaposleni WHERE id = p_id;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+INSERT INTO zaposleni (ime, priimek, email, telefon, placa, datum_zaposlitve, delovno_mesto_id, oddelek_id,kraj_id)
+VALUES ('Marko', 'Novak', 'marko.novak@podjetje.si', '031111111', 1800, '2022-01-10', 1, 1,5);
+
+INSERT INTO zaposleni (ime, priimek, email, telefon, placa, datum_zaposlitve, delovno_mesto_id, oddelek_id,kraj_id)
+VALUES ('Ana', 'Kovač', 'ana.kovac@podjetje.si', '031222222', 1950, '2021-05-03', 2, 2, 4);
+
+INSERT INTO zaposleni (ime, priimek, email, telefon, placa, datum_zaposlitve, delovno_mesto_id, oddelek_id,kraj_id)
+VALUES ('Luka', 'Horvat', 'luka.horvat@podjetje.si', '031333333', 2100, '2020-09-15', 3, 2, 3);
+
+INSERT INTO zaposleni (ime, priimek, email, telefon, placa, datum_zaposlitve, delovno_mesto_id, oddelek_id,kraj_id)
+VALUES ('Petra', 'Zupan', 'petra.zupan@podjetje.si', '031444444', 2300, '2019-03-01', 2, 3, 4);
+
+INSERT INTO zaposleni (ime, priimek, email, telefon, placa, datum_zaposlitve, delovno_mesto_id, oddelek_id,kraj_id)
+VALUES ('Miha', 'Vidmar', 'miha.vidmar@podjetje.si', '031555555', 1750, '2023-06-20', 1, 2,5);
+
+INSERT INTO kraji (ime, postna_stevilka) VALUES ('Ljubljana', '1000');
+INSERT INTO kraji (ime, postna_stevilka) VALUES ('Maribor', '2000');
+INSERT INTO kraji (ime, postna_stevilka) VALUES ('Celje', '3000');
+INSERT INTO kraji (ime, postna_stevilka) VALUES ('Kranj', '4000');
+INSERT INTO kraji (ime, postna_stevilka) VALUES ('Velenje', '3320');
+
+INSERT INTO delovna_mesta (naziv) VALUES ('Programer');
+INSERT INTO delovna_mesta (naziv) VALUES ('Sistemski administrator');
+INSERT INTO delovna_mesta (naziv) VALUES ('Analitik');
+INSERT INTO delovna_mesta (naziv) VALUES ('Vodja projekta');
+INSERT INTO delovna_mesta (naziv) VALUES ('Tehnik');
+
+INSERT INTO "Izobrazba" (naziv, opis) VALUES ('Srednja šola', 'Zaključena srednješolska izobrazba');
+INSERT INTO "Izobrazba"(naziv, opis) VALUES ('Višja šola', 'Višješolski strokovni program');
+INSERT INTO "Izobrazba" (naziv, opis) VALUES ('Visoka šola', 'Visokošolski strokovni program');
+INSERT INTO "Izobrazba" (naziv, opis) VALUES ('Univerzitetna', 'Univerzitetni študijski program');
+INSERT INTO "Izobrazba" (naziv, opis) VALUES ('Magisterij', 'Podiplomski magistrski študij');
+INSERT INTO oddelki (ime) VALUES ('IT');
+INSERT INTO oddelki (ime) VALUES ('Računovodstvo');
+INSERT INTO oddelki (ime) VALUES ('Kadrovska služba');
+INSERT INTO oddelki (ime) VALUES ('Prodaja');
+INSERT INTO oddelki (ime) VALUES ('Marketing');
+
+
+
+
+
+
+
+
