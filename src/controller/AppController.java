@@ -4,53 +4,57 @@ import db.Database;
 import service.AuthService;
 import ui.LoginWindow;
 import ui.MainWindow;
-
 import javax.swing.*;
 
 public class AppController {
-
     private Database db;
     private AuthService authService;
     private LoginWindow loginWindow;
 
     public void startApp() {
         try {
-            // 1️⃣ povežemo bazo
             db = new Database();
             db.connect();
+            System.out.println("Povezano z bazo");
 
-            // 2️⃣ ustvarimo AuthService
             authService = new AuthService(db);
-
-            // 3️⃣ odpremo login UI
             loginWindow = new LoginWindow();
-
-            // 4️⃣ povežemo gumb LOGIN
             loginWindow.getBtnLogin().addActionListener(e -> handleLogin());
 
+            // zdaj pokažemo okno
+            loginWindow.setVisible(true);
+
         } catch (Exception e) {
-            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Napaka: " + e.getMessage());
         }
     }
 
     private void handleLogin() {
+
+
         try {
             String username = loginWindow.getTxtUsername().getText();
             String password = new String(loginWindow.getTxtPassword().getPassword());
 
+            if (username.isEmpty() || password.isEmpty()) {
+                JOptionPane.showMessageDialog(loginWindow, "Vnesite oba polja");
+                return;
+            }
+
             boolean success = authService.login(username, password);
 
             if (success) {
-                JOptionPane.showMessageDialog(loginWindow, "Prijava uspešna");
+                JOptionPane.showMessageDialog(loginWindow, "Prijava uspešna!");
                 loginWindow.dispose();
                 new MainWindow();
             } else {
-                JOptionPane.showMessageDialog(loginWindow, "Napačno uporabniško ime ali geslo");
+                JOptionPane.showMessageDialog(loginWindow, "Napačni podatki");
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(loginWindow, "Napaka pri prijavi");
+            JOptionPane.showMessageDialog(loginWindow, "Napaka: " + e.getMessage());
         }
     }
+
+
 }

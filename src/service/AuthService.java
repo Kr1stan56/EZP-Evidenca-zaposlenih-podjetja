@@ -2,13 +2,11 @@ package service;
 
 import db.Database;
 import org.mindrot.jbcrypt.BCrypt;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 public class AuthService {
-
     private final Database db;
 
     public AuthService(Database db) {
@@ -29,4 +27,5 @@ public class AuthService {
         String hash = rs.getString("password");
         return BCrypt.checkpw(password, hash);
     }
+
 }

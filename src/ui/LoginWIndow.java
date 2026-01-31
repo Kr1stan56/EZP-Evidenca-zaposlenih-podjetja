@@ -8,13 +8,14 @@ public class LoginWindow extends JFrame {
     private JTextField txtUsername;
     private JPasswordField txtPassword;
     private JButton btnLogin;
-    private JButton btnTempRegister; // ZAČASNO
+
+
+
 
     public LoginWindow() {
         setTitle("EZP – Prijava");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        // velikost ~ 1/3 zaslona
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
         setSize(screen.width / 3, screen.height / 3);
         setLocationRelativeTo(null); // center
@@ -40,7 +41,6 @@ public class LoginWindow extends JFrame {
         txtPassword = new JPasswordField();
 
         btnLogin = new JButton("Prijava");
-        btnTempRegister = new JButton("⚠️ Temp register");
 
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
         panel.add(lblTitle, gbc);
@@ -61,8 +61,6 @@ public class LoginWindow extends JFrame {
         gbc.gridwidth = 1;
         panel.add(btnLogin, gbc);
 
-        gbc.gridx = 1;
-        panel.add(btnTempRegister, gbc);
 
         add(panel);
     }
@@ -70,5 +68,4 @@ public class LoginWindow extends JFrame {
     public JTextField getTxtUsername() { return txtUsername; }
     public JPasswordField getTxtPassword() { return txtPassword; }
     public JButton getBtnLogin() { return btnLogin; }
-    public JButton getBtnTempRegister() { return btnTempRegister; }
 }
