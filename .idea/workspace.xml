@@ -5,28 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="412c7d5d-e8d6-4da9-abae-7cfc85e57be9" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/jbcrypt_0_4.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/krstan test development resources/EZP-Evidenca-zaposlenih-podjetja.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/krstan test development resources/EZP-Evidenca-zaposlenih.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/026143ee-664e-4167-8d53-a4ee57646e61/storage_v2/_src_/database/postgres.edMnLQ.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/026143ee-664e-4167-8d53-a4ee57646e61/storage_v2/_src_/database/postgres.edMnLQ/schema/information_schema.FNRwLQ.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/026143ee-664e-4167-8d53-a4ee57646e61/storage_v2/_src_/database/postgres.edMnLQ/schema/pg_catalog.0S1ZNQ.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/026143ee-664e-4167-8d53-a4ee57646e61/storage_v2/_src_/database/postgres.edMnLQ/schema/public.abK9xQ.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/026143ee-664e-4167-8d53-a4ee57646e61/storage_v2/_src_/database/postgres.edMnLQ/schema/public.abK9xQ.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/postgresql_42_7_9.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/postgresql_42_7_9.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ChatGPT Image 31. jan. 2026, 20_57_48.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/EZP-Evidenca-zaposlenih-podjetja.iml" beforeDir="false" afterPath="$PROJECT_DIR$/EZP-Evidenca-zaposlenih-podjetja.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/EZP-Evidenca-zaposlenih.SQL" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/EZP-Evidenca-zaposlenih.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/PostgreSQL 14.txp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/podprogrami.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/controller/AppController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/controller/AppController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ui/LoginWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ui/LoginWindow.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ui/MainWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ui/MainWindow.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ui/UiConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ui/UiConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/untitled/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/untitled/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/untitled/.idea/libraries/postgresql_42_7_9.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/untitled/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/untitled/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/untitled/.idea/vcs.xml" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

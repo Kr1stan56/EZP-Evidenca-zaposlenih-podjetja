@@ -11,6 +11,7 @@ import java.sql.*;
 import java.util.Map;
 import java.util.HashMap;
 
+
 public class AppController {
 
     private Database db;
@@ -38,65 +39,137 @@ public class AppController {
         }
     }
 
-    
+
 
     private void loadUiConfig() throws Exception {
 
+        // reset (da se vidi, če kaj manjka)
         UiConfig.FONT_BASE = null;
         UiConfig.FONT_H1 = null;
         UiConfig.FONT_H2 = null;
 
+        UiConfig.BG_APP = null;
+        UiConfig.BG_BAR = null;
+        UiConfig.BG_CARD = null;
+        UiConfig.BORDER = null;
+
+        UiConfig.TEXT = null;
+        UiConfig.TEXT_MUTED = null;
+
+        UiConfig.PRIMARY = null;
+        UiConfig.SUCCESS = null;
+        UiConfig.DANGER = null;
+
+        // če teh polj še nimaš v UiConfig, jih dodaj (public static Color ...)
+        UiConfig.PRIMARY_TEXT = null;
+        UiConfig.TABLE_HEADER_BG = null;
+        UiConfig.TABLE_HEADER_FG = null;
+        UiConfig.TABLE_GRID = null;
+
+        // int-e lahko resetiraš na -1, da strogo preverjaš
+        UiConfig.PAD = -1;
+        UiConfig.PAD_INNER = -1;
+        UiConfig.BTN_W = -1;
+        UiConfig.BTN_H = -1;
+        UiConfig.TABLE_ROW_H = -1;
+
+        // icon gumbi (imaš v bazi)
+        UiConfig.BTN_ICON_W = -1;
+        UiConfig.BTN_ICON_H = -1;
+
         Connection conn = db.getConnection();
 
-        PreparedStatement ps = conn.prepareStatement(
+        try (PreparedStatement ps = conn.prepareStatement(
                 "SELECT name, value FROM public.get_settings(?)"
-        );
-        ps.setString(1, "ui.");
+        )) {
+            ps.setString(1, "ui.");
 
-        ResultSet rs = ps.executeQuery();
+            try (ResultSet rs = ps.executeQuery()) {
 
-        String fontFamily = null;
+                String fontFamily = null;
+                Integer fontBaseSize = null;
+                Integer fontH1Size = null;
+                Integer fontH2Size = null;
 
-        while (rs.next()) {
-            String k = rs.getString("name");
-            String v = rs.getString("value");
+                while (rs.next()) {
+                    String k = rs.getString("name");
+                    String v = rs.getString("value");
 
-            switch (k) {
-                case "ui.font.family" -> fontFamily = v;
+                    switch (k) {
+                        case "ui.font.family"     -> fontFamily = v;
+                        case "ui.font.size.base"  -> fontBaseSize = Integer.parseInt(v);
+                        case "ui.font.size.h1"    -> fontH1Size = Integer.parseInt(v);
+                        case "ui.font.size.h2"    -> fontH2Size = Integer.parseInt(v);
 
-                case "ui.color.bg.app"  -> UiConfig.BG_APP  = Color.decode(v);
-                case "ui.color.bg.bar"  -> UiConfig.BG_BAR  = Color.decode(v);
-                case "ui.color.bg.card" -> UiConfig.BG_CARD = Color.decode(v);
-                case "ui.color.border"  -> UiConfig.BORDER  = Color.decode(v);
+                        case "ui.color.bg.app"    -> UiConfig.BG_APP  = Color.decode(v);
+                        case "ui.color.bg.bar"    -> UiConfig.BG_BAR  = Color.decode(v);
+                        case "ui.color.bg.card"   -> UiConfig.BG_CARD = Color.decode(v);
+                        case "ui.color.border"    -> UiConfig.BORDER  = Color.decode(v);
 
-                case "ui.color.text"       -> UiConfig.TEXT       = Color.decode(v);
-                case "ui.color.text.muted" -> UiConfig.TEXT_MUTED  = Color.decode(v);
+                        case "ui.color.text"       -> UiConfig.TEXT = Color.decode(v);
+                        case "ui.color.text.muted" -> UiConfig.TEXT_MUTED = Color.decode(v);
 
-                case "ui.color.primary" -> UiConfig.PRIMARY = Color.decode(v);
-                case "ui.color.success" -> UiConfig.SUCCESS = Color.decode(v);
-                case "ui.color.danger"  -> UiConfig.DANGER  = Color.decode(v);
+                        case "ui.color.primary"      -> UiConfig.PRIMARY = Color.decode(v);
+                        case "ui.color.primary.text" -> UiConfig.PRIMARY_TEXT = Color.decode(v);
+                        case "ui.color.success"      -> UiConfig.SUCCESS = Color.decode(v);
+                        case "ui.color.danger"       -> UiConfig.DANGER = Color.decode(v);
 
-                case "ui.pad.outer" -> UiConfig.PAD = Integer.parseInt(v);
-                case "ui.pad.inner" -> UiConfig.PAD_INNER = Integer.parseInt(v);
+                        case "ui.color.table.header.bg" -> UiConfig.TABLE_HEADER_BG = Color.decode(v);
+                        case "ui.color.table.header.fg" -> UiConfig.TABLE_HEADER_FG = Color.decode(v);
+                        case "ui.color.table.grid"      -> UiConfig.TABLE_GRID = Color.decode(v);
+                        case "ui.color.table.bg" -> UiConfig.TABLE_BG = Color.decode(v);
 
-                case "ui.btn.w" -> UiConfig.BTN_W = Integer.parseInt(v);
-                case "ui.btn.h" -> UiConfig.BTN_H = Integer.parseInt(v);
 
-                case "ui.table.row.h" -> UiConfig.TABLE_ROW_H = Integer.parseInt(v);
+
+                        case "ui.pad.outer" -> UiConfig.PAD = Integer.parseInt(v);
+                        case "ui.pad.inner" -> UiConfig.PAD_INNER = Integer.parseInt(v);
+
+                        case "ui.btn.w" -> UiConfig.BTN_W = Integer.parseInt(v);
+                        case "ui.btn.h" -> UiConfig.BTN_H = Integer.parseInt(v);
+
+                        case "ui.btn.icon.w" -> UiConfig.BTN_ICON_W = Integer.parseInt(v);
+                        case "ui.btn.icon.h" -> UiConfig.BTN_ICON_H = Integer.parseInt(v);
+
+                        case "ui.table.row.h" -> UiConfig.TABLE_ROW_H = Integer.parseInt(v);
+
+                        default -> {
+                        }
+                    }
+                }
+
+                if (fontFamily != null && fontBaseSize != null && fontH1Size != null && fontH2Size != null) {
+                    UiConfig.FONT_BASE = new Font(fontFamily, Font.PLAIN, fontBaseSize);
+                    UiConfig.FONT_H1   = new Font(fontFamily, Font.BOLD,  fontH1Size);
+                    UiConfig.FONT_H2   = new Font(fontFamily, Font.BOLD,  fontH2Size);
+                }
+
+                StringBuilder missing = new StringBuilder();
+
+                if (UiConfig.FONT_BASE == null) missing.append(" ui.font.*");
+                if (UiConfig.BG_APP == null) missing.append(" ui.color.bg.app");
+                if (UiConfig.BORDER == null) missing.append(" ui.color.border");
+                if (UiConfig.PRIMARY == null) missing.append(" ui.color.primary");
+                if (UiConfig.TEXT == null) missing.append(" ui.color.text");
+
+                if (UiConfig.PAD < 0) missing.append(" ui.pad.outer");
+                if (UiConfig.PAD_INNER < 0) missing.append(" ui.pad.inner");
+                if (UiConfig.BTN_W < 0) missing.append(" ui.btn.w");
+                if (UiConfig.BTN_H < 0) missing.append(" ui.btn.h");
+                if (UiConfig.TABLE_ROW_H < 0) missing.append(" ui.table.row.h");
+
+                if (UiConfig.PRIMARY_TEXT == null) missing.append(" ui.color.primary.text");
+                if (UiConfig.TABLE_HEADER_BG == null) missing.append(" ui.color.table.bg");
+                if (UiConfig.TABLE_BG == null) missing.append(" ui.color.table.bg");
+
+                if (UiConfig.TABLE_HEADER_FG == null) missing.append(" ui.color.table.header.fg");
+                if (UiConfig.TABLE_GRID == null) missing.append(" ui.color.table.grid");
+                if (UiConfig.BTN_ICON_W < 0) missing.append(" ui.btn.icon.w");
+                if (UiConfig.BTN_ICON_H < 0) missing.append(" ui.btn.icon.h");
+
+                if (!missing.isEmpty()) {
+                    throw new IllegalStateException("UI nastavitve niso pravilno naložene. Manjka:" + missing);
+                }
             }
-        }
-
-        rs.close();
-        ps.close();
-
-        if (fontFamily != null) {
-            UiConfig.FONT_BASE = new Font(fontFamily, Font.PLAIN, 12);
-            UiConfig.FONT_H1   = new Font(fontFamily, Font.BOLD, 18);
-            UiConfig.FONT_H2   = new Font(fontFamily, Font.BOLD, 14);
-        }
-
-        if (UiConfig.FONT_BASE == null || UiConfig.PRIMARY == null || UiConfig.BG_APP == null || UiConfig.BORDER == null) {
-            throw new IllegalStateException("UI nastavitve niso pravilno naložene (manjkajo ui.* ključi)");
         }
     }
 
@@ -272,5 +345,11 @@ public class AppController {
             ps.execute();
         }
     }
+    public void refreshApp() throws Exception {
+        loadUiConfig();
+    }
+
+
+
 
 }
