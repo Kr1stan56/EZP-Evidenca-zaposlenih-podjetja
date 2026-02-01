@@ -79,7 +79,12 @@ public class MainWindow extends JFrame {
         styleDanger(deleteButton);
         styleIcon(refreshButton);
 
-        addButton.addActionListener(e -> onAdd());
+        addButton.addActionListener(e -> {
+            AddEmployee dlg = new AddEmployee(this);
+            dlg.setVisible(true);
+        });
+
+
         editButton.addActionListener(e -> onEdit());
         deleteButton.addActionListener(e -> onDelete());
         refreshButton.addActionListener(e -> refreshTable());
@@ -123,11 +128,7 @@ public class MainWindow extends JFrame {
     }
 
 
-    private void onAdd() {
-        JOptionPane.showMessageDialog(this, "TODO: Dodaj zaposlenega (prek controllerja)");
-        // controller.addEmployee(...)
-        // refreshTable();
-    }
+
 
     private void onEdit() {
         int row = employeeTable.getSelectedRow();
