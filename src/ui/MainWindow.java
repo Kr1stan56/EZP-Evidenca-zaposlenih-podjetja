@@ -1,12 +1,10 @@
 package ui;
 
-import db.Database;
+import controller.AppController;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 
 public class MainWindow extends JFrame {
 
@@ -15,68 +13,76 @@ public class MainWindow extends JFrame {
     private JButton editButton;
     private JButton deleteButton;
     private JButton refreshButton;
-    private Database db;
-    private int RowHieght = 25;
-    public MainWindow(Database db) throws Exception{
-        this.db = db;
 
-        setTitle("EZP – Evidencia zaposlenih podjetja");
+    private final AppController controller;
+    private final int rowHeight = 26;
+
+    public MainWindow(AppController controller) {
+        this.controller = controller;
+
+        setTitle("EZP – Evidenca zaposlenih podjetja");
         setSize(1000, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setVisible(true);
 
         setupWindow();
-        try {
-            loadEmployeeData();
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, e.getMessage(), "Napaka", JOptionPane.ERROR_MESSAGE);
-        }
+        refreshTable();
+
+        setVisible(true);
     }
 
     private void setupWindow() {
         JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(new Color(240, 244, 250));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+
+        JPanel topBar = new JPanel(new BorderLayout());
+        topBar.setBackground(new Color(235, 240, 248));
+        topBar.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(210, 220, 235)),
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
 
         JLabel titleLabel = new JLabel("Seznam Zaposlenih");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        JPanel titlePanel = new JPanel();
-        titlePanel.add(titleLabel);
+        titleLabel.setForeground(new Color(20, 60, 130));
+        topBar.add(titleLabel, BorderLayout.WEST);
 
-        JPanel buttonPanel = createButtonPanel();
+        JPanel buttonBar = createButtonBar();
+        topBar.add(buttonBar, BorderLayout.EAST);
 
         employeeTable = createEmployeeTable();
-        JScrollPane tableScrollPane = new JScrollPane(employeeTable);
 
-        mainPanel.add(titlePanel, BorderLayout.NORTH);
-        mainPanel.add(buttonPanel, BorderLayout.WEST);
+        JScrollPane tableScrollPane = new JScrollPane(employeeTable);
+        tableScrollPane.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(210, 220, 235)),
+                BorderFactory.createEmptyBorder(8, 8, 8, 8)
+        ));
+
+        mainPanel.add(topBar, BorderLayout.NORTH);
         mainPanel.add(tableScrollPane, BorderLayout.CENTER);
 
-        add(mainPanel);
+        setContentPane(mainPanel);
     }
 
-    private JPanel createButtonPanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(5, 1, 5, 5));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+    private JPanel createButtonBar() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        panel.setOpaque(false);
 
-        addButton = new JButton("Dodaj Zaposlenega");
-        editButton = new JButton("Uredi");
-        deleteButton = new JButton("Izbriši");
-        refreshButton = new JButton("Osveži");
+        addButton = new JButton("➕ Dodaj zaposlenega");
+        editButton = new JButton("✓ Uredi");
+        deleteButton = new JButton("✖ Izbriši");
+        refreshButton = new JButton("⟳");
 
-        addButton.addActionListener(e -> addEmployee());
-        editButton.addActionListener(e -> editEmployee());
-        deleteButton.addActionListener(e -> deleteEmployee());
-        refreshButton.addActionListener(e -> {
-            try {
-                loadEmployeeData();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Napaka", JOptionPane.ERROR_MESSAGE);
-            }
-        });
+        stylePrimary(addButton);
+        styleSuccess(editButton);
+        styleDanger(deleteButton);
+        styleIcon(refreshButton);
 
+        addButton.addActionListener(e -> onAdd());
+        editButton.addActionListener(e -> onEdit());
+        deleteButton.addActionListener(e -> onDelete());
+        refreshButton.addActionListener(e -> refreshTable());
 
         panel.add(addButton);
         panel.add(editButton);
@@ -87,110 +93,90 @@ public class MainWindow extends JFrame {
     }
 
     private JTable createEmployeeTable() {
-        String[] columns = {
-                "Ime", "Priimek", "Telefon", "Plača", "Kraj"
-        };
+        String[] columns = { "Ime", "Priimek", "Delovno mesto", "Oddelek", "Plača", "Datum zaposlitve" };
 
         DefaultTableModel model = new DefaultTableModel(columns, 0) {
             @Override public boolean isCellEditable(int row, int column) { return false; }
         };
 
         JTable table = new JTable(model);
-        table.setRowHeight(RowHieght);
+        table.setRowHeight(rowHeight);
+        table.setBackground(Color.WHITE);
+        table.setGridColor(new Color(220, 228, 240));
+        table.getTableHeader().setReorderingAllowed(false);
+
+        table.getTableHeader().setBackground(new Color(30, 95, 190));
+        table.getTableHeader().setForeground(Color.WHITE);
+        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+
         return table;
     }
 
-
-
-    private void loadEmployeeData() throws Exception {
-        Connection conn = db.getConnection();
-
-        if (conn == null || conn.isClosed()) {
-            throw new IllegalStateException("DB connection ni odprta");
-        }
-
-        String sql = "SELECT * FROM get_all_employees()";
-        PreparedStatement ps = conn.prepareStatement(sql);
-        ResultSet rs = ps.executeQuery();
-
-        DefaultTableModel model = (DefaultTableModel) employeeTable.getModel();
-        model.setRowCount(0);
-
-        while (rs.next()) {
-            Object[] row = {
-                    rs.getInt("id"),
-                    rs.getString("ime"),
-                    rs.getString("priimek"),
-                    rs.getString("email"),
-                    rs.getString("telefon"),
-                    rs.getFloat("placa"),
-                    rs.getDate("datum_zaposlitve"),
-                    rs.getString("delovno_mesto"),
-                    rs.getString("oddelek"),
-                    rs.getString("kraj"),
-                    rs.getString("izobrazba")
-            };
-            model.addRow(row);
-        }
-
-        rs.close();
-        ps.close();
-        //conn.close();
-    }
-
-
-
-
-
-
-    private void addEmployee() {
+    private void refreshTable() {
         try {
-            Connection conn = db.getConnection();
-
-            // String sql = "SELECT add_employee(?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-            // TODO: Implementiraj SQL za dodajanje zaposlenega
-
-            conn.close();
-
+            DefaultTableModel model = (DefaultTableModel) employeeTable.getModel();
+            controller.loadEmployees(model);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Napaka: " + e.getMessage(), "Napaka", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Napaka", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void editEmployee() {
-        int selectedRow = employeeTable.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Izberi zaposlenega!");
-            return;
-        }
 
-        // TODO: Implementiraj urejanje zaposlenega
-        JOptionPane.showMessageDialog(this, "Funkcija za urejanje zaposlenega");
+    private void onAdd() {
+        JOptionPane.showMessageDialog(this, "TODO: Dodaj zaposlenega (prek controllerja)");
+        // controller.addEmployee(...)
+        // refreshTable();
     }
 
-    private void deleteEmployee() {
-        int selectedRow = employeeTable.getSelectedRow();
-        if (selectedRow == -1) {
+    private void onEdit() {
+        int row = employeeTable.getSelectedRow();
+        if (row == -1) {
             JOptionPane.showMessageDialog(this, "Izberi zaposlenega!");
             return;
         }
+        JOptionPane.showMessageDialog(this, "TODO: Uredi zaposlenega (prek controllerja)");
+        // controller.updateEmployee(...)
+        // refreshTable();
+    }
 
+    private void onDelete() {
+        int row = employeeTable.getSelectedRow();
+        if (row == -1) {
+            JOptionPane.showMessageDialog(this, "Izberi zaposlenega!");
+            return;
+        }
         int confirm = JOptionPane.showConfirmDialog(this, "Izbrišem?", "Potrdi", JOptionPane.YES_NO_OPTION);
+        if (confirm != JOptionPane.YES_OPTION) return;
 
-        if (confirm == JOptionPane.YES_OPTION) {
-            try {
-                Connection conn = db.getConnection();
+        JOptionPane.showMessageDialog(this, "TODO: Izbriši zaposlenega (prek controllerja)");
+        // controller.deleteEmployee(...)
+        // refreshTable();
+    }
 
-                // String sql = "SELECT delete_employee(?)";
 
-                // TODO: Implementiraj SQL za brisanje zaposlenega
+    private void stylePrimary(JButton b) {
+        b.setBackground(new Color(30, 95, 190));
+        b.setForeground(Color.WHITE);
+        b.setFocusPainted(false);
+    }
 
-                conn.close();
+    private void styleSuccess(JButton b) {
+        b.setBackground(new Color(46, 160, 67));
+        b.setForeground(Color.WHITE);
+        b.setFocusPainted(false);
+    }
 
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Napaka: " + e.getMessage(), "Napaka", JOptionPane.ERROR_MESSAGE);
-            }
-        }
+    private void styleDanger(JButton b) {
+        b.setBackground(new Color(200, 50, 50));
+        b.setForeground(Color.WHITE);
+        b.setFocusPainted(false);
+    }
+
+    private void styleIcon(JButton b) {
+        b.setBackground(new Color(235, 240, 248));
+        b.setForeground(new Color(20, 60, 130));
+        b.setFocusPainted(false);
+        b.setPreferredSize(new Dimension(44, 28));
     }
 }

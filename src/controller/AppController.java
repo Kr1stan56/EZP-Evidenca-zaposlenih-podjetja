@@ -7,6 +7,12 @@ import ui.MainWindow;
 
 import javax.swing.*;
 
+import javax.swing.table.DefaultTableModel;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
+
 public class AppController {
     private Database db;
     private AuthService authService;
@@ -49,8 +55,7 @@ public class AppController {
             if (loginSuccessful) {
                 loginWindow.dispose();
 
-                // Dodaj parameter db v MainWindow konstruktor
-                new MainWindow(db);
+                new MainWindow(this);
             } else {
                 JOptionPane.showMessageDialog(loginWindow, "Napačno uporabniško ime ali geslo");
             }
@@ -59,4 +64,30 @@ public class AppController {
             JOptionPane.showMessageDialog(loginWindow, "Napaka: " + e.getMessage());
         }
     }
+
+    public void loadEmployees(DefaultTableModel model) throws Exception {
+        Connection conn = db.getConnection();
+
+        String sql = "SELECT * FROM get_all_employees()";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+
+        model.setRowCount(0);
+
+        while (rs.next()) {
+            Object[] row = {
+                    rs.getString("ime"),
+                    rs.getString("priimek"),
+                    rs.getString("delovno_mesto"),
+                    rs.getString("oddelek"),
+                    rs.getFloat("placa"),
+                    rs.getDate("datum_zaposlitve")
+            };
+            model.addRow(row);
+        }
+
+        rs.close();
+        ps.close();
+    }
+
 }
