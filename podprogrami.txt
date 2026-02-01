@@ -1,0 +1,191 @@
+create function add_employee(p_ime character varying, p_priimek character varying, p_email character varying, p_telefon character varying, p_placa real, p_datum_zaposlitve date, p_delovno_mesto_id integer, p_oddelek_id integer, p_kraj_id integer, p_izobrazba_id integer) returns integer
+    language plpgsql
+as
+$$
+DECLARE
+    new_id int;
+BEGIN
+    INSERT INTO zaposleni
+        (ime, priimek, email, telefon, placa, datum_zaposlitve,
+         delovno_mesto_id, oddelek_id, kraj_id, izobrazba_id)
+    VALUES
+        (p_ime, p_priimek, p_email, p_telefon, p_placa, p_datum_zaposlitve,
+         p_delovno_mesto_id, p_oddelek_id, p_kraj_id, p_izobrazba_id)
+    RETURNING id INTO new_id;
+
+    RETURN new_id;
+END;
+$$;
+
+alter function add_employee(varchar, varchar, varchar, varchar, real, date, integer, integer, integer, integer) owner to postgres;
+
+
+
+create function delete_employee(p_id integer) returns void
+    language plpgsql
+as
+$$
+BEGIN
+    DELETE FROM zaposleni WHERE id = p_id;
+END;
+$$;
+
+alter function delete_employee(integer) owner to postgres;
+
+
+create function get_all_employees()
+    returns TABLE(id integer, ime character varying, priimek character varying, email character varying, telefon character varying, placa real, datum_zaposlitve date, delovno_mesto character varying, oddelek character varying, kraj character varying, izobrazba character varying)
+    language plpgsql
+as
+$$
+BEGIN
+    RETURN QUERY
+    SELECT
+        z.id,
+        z.ime,
+        z.priimek,
+        z.email,
+        z.telefon,
+        z.placa,
+        z.datum_zaposlitve,
+        dm.naziv AS delovno_mesto,
+        o.ime    AS oddelek,
+        k.ime    AS kraj,
+        i.naziv  AS izobrazba
+    FROM zaposleni z
+    JOIN delovna_mesta dm ON z.delovno_mesto_id = dm.id
+    JOIN oddelki o        ON z.oddelek_id = o.id
+    LEFT JOIN kraji k     ON z.kraj_id = k.id
+    LEFT JOIN "Izobrazba" i ON z.izobrazba_id = i.id
+    ORDER BY z.priimek, z.ime;
+END;
+$$;
+
+alter function get_all_employees() owner to postgres;
+
+
+
+create function get_delovna_mesta()
+    returns TABLE(id integer, naziv text)
+    language sql
+as
+$$
+    SELECT id, naziv FROM delovna_mesta ORDER BY naziv;
+$$;
+
+alter function get_delovna_mesta() owner to postgres;
+
+create function get_employee_by_id(p_id integer)
+    returns TABLE(ime text, priimek text, email text, telefon text, placa numeric, datum_zaposlitve date, delovno_mesto_id integer, oddelek_id integer, kraj_id integer)
+    language sql
+as
+$$
+    SELECT ime, priimek, email, telefon, placa, datum_zaposlitve,
+           delovno_mesto_id, oddelek_id, kraj_id
+    FROM zaposleni
+    WHERE id = p_id;
+$$;
+
+alter function get_employee_by_id(integer) owner to postgres;
+
+create function get_kraji()
+    returns TABLE(id integer, naziv text)
+    language sql
+as
+$$
+    SELECT id, ime FROM kraji ORDER BY ime;
+$$;
+
+alter function get_kraji() owner to postgres;
+
+create function get_oddelki()
+    returns TABLE(id integer, naziv text)
+    language sql
+as
+$$
+    SELECT id, ime FROM oddelki ORDER BY ime;
+$$;
+
+alter function get_oddelki() owner to postgres;
+
+create function get_oddelki()
+    returns TABLE(id integer, naziv text)
+    language sql
+as
+$$
+    SELECT id, ime FROM oddelki ORDER BY ime;
+$$;
+
+alter function get_oddelki() owner to postgres;
+
+create function get_settings(p_prefix text)
+    returns TABLE(name text, value text)
+    language sql
+as
+$$
+    SELECT s.name, s.value
+    FROM public.settings s
+    WHERE s.name LIKE (p_prefix || '%')
+    ORDER BY s.name;
+$$;
+
+alter function get_settings(text) owner to postgres;
+
+create function login_admin(p_username character varying)
+    returns TABLE(password character varying)
+    language plpgsql
+as
+$$
+BEGIN
+    RETURN QUERY
+    SELECT u.password
+    FROM admin_users u
+    WHERE u.username = p_username;
+END;
+$$;
+
+alter function login_admin(varchar) owner to postgres;
+
+create function register_user_začasno(p_username text, p_password_hash text, p_email text) returns boolean
+    language plpgsql
+as
+$$
+BEGIN
+    IF EXISTS (SELECT 1 FROM admin_users WHERE username = p_username) THEN
+        RETURN FALSE;
+    END IF;
+
+    INSERT INTO admin_users(username, password, email)
+    VALUES (p_username, p_password_hash, p_email);
+
+    RETURN TRUE;
+END;
+$$;
+
+alter function register_user_začasno(text, text, text) owner to postgres;
+
+create function update_employee(p_id integer, p_ime text, p_priimek text, p_email text, p_telefon text, p_placa numeric, p_datum_zaposlitve date, p_delovno_mesto_id integer, p_oddelek_id integer, p_kraj_id integer) returns void
+    language plpgsql
+as
+$$
+BEGIN
+    UPDATE zaposleni
+    SET ime = p_ime,
+        priimek = p_priimek,
+        email = p_email,
+        telefon = p_telefon,
+        placa = p_placa,
+        datum_zaposlitve = p_datum_zaposlitve,
+        delovno_mesto_id = p_delovno_mesto_id,
+        oddelek_id = p_oddelek_id,
+        kraj_id = p_kraj_id
+    WHERE id = p_id;
+END;
+$$;
+
+alter function update_employee(integer, text, text, text, text, numeric, date, integer, integer, integer) owner to postgres;
+
+
+
+
+
