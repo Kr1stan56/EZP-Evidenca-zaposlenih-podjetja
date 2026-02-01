@@ -4,12 +4,18 @@ import java.awt.*;
 
 public class UiConfig {
 
+    public static Font FONT_SMALL_BOLD ;
     // fonti
     public static Font FONT_BASE;
     public static Font FONT_H1;
     public static Font FONT_H2;
 
+    public static Font FONT_SMALL;
+    public static Font FONT_BASE_BOLD;
     // barve
+    public static Color TEXT_PLACEHOLDER;
+    public static Color BG_INPUT;
+
     public static Color BG_APP;
     public static Color BG_BAR;
     public static Color BG_CARD;
@@ -29,3 +35,4 @@ public class UiConfig {
     public static int BTN_H;
     public static int TABLE_ROW_H;
 }
+

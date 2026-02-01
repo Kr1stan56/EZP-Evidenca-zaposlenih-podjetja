@@ -56,15 +56,15 @@ public class MainWindow extends JFrame {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         p.setOpaque(false);
 
-        JButton add = button("➕ Dodaj zaposlenega", UiConfig.PRIMARY, Color.WHITE, UiConfig.BTN_W, UiConfig.BTN_H, this::onAdd);
-        JButton edit = button("✓ Uredi", UiConfig.SUCCESS, Color.WHITE, UiConfig.BTN_W, UiConfig.BTN_H, this::onEdit);
-        JButton del = button("✖ Izbriši", UiConfig.DANGER, Color.WHITE, UiConfig.BTN_W, UiConfig.BTN_H, this::onDelete);
-        JButton ref = button("⟳", UiConfig.BG_BAR, UiConfig.TEXT_MUTED, UiConfig.BTN_H, UiConfig.BTN_H, this::refreshTable);
+        JButton add = button("+ Dodaj zaposlenega", UiConfig.PRIMARY, Color.WHITE, UiConfig.BTN_W, UiConfig.BTN_H, this::onAdd);
+        JButton edit = button(" Uredi", UiConfig.SUCCESS, Color.WHITE, UiConfig.BTN_W, UiConfig.BTN_H, this::onEdit);
+        JButton del = button("X Izbriši", UiConfig.DANGER, Color.WHITE, UiConfig.BTN_W, UiConfig.BTN_H, this::onDelete);
+        //JButton ref = button("⟳", UiConfig.BG_BAR, UiConfig.TEXT_MUTED, UiConfig.BTN_H, UiConfig.BTN_H, this::refreshTable);
 
         p.add(add);
         p.add(edit);
         p.add(del);
-        p.add(ref);
+        //p.add(ref);
 
         return p;
     }

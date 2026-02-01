@@ -8,6 +8,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.*;
+import java.util.Map;
+import java.util.HashMap;
 
 public class AppController {
 
@@ -270,4 +272,5 @@ public class AppController {
             ps.execute();
         }
     }
+
 }
