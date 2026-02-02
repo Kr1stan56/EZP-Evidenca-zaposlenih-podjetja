@@ -11,7 +11,7 @@ import java.sql.SQLException;
 public class AddEmployee extends JDialog {
 
     private JTextField txtIme, txtPriimek, txtEmail, txtTelefon, txtPlaca, txtDatum;
-    private JComboBox<Item> cbDelovnoMesto, cbOddelek, cbKraj;
+    private JComboBox<Item> cbDelovnoMesto, cbOddelek, cbKraj, cbIzobrazba;
     private JButton btnSave;
 
     private final AppController controller;
@@ -35,7 +35,7 @@ public class AddEmployee extends JDialog {
         this.employeeId = employeeId;
 
         setTitle(mode == EmployeeFormMode.CREATE ? "Dodaj zaposlenega" : "Uredi zaposlenega");
-        setSize(500, 400);
+        setSize(520, 430);
         setLocationRelativeTo(owner);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
@@ -60,6 +60,7 @@ public class AddEmployee extends JDialog {
         cbDelovnoMesto = new JComboBox<>();
         cbOddelek = new JComboBox<>();
         cbKraj = new JComboBox<>();
+        cbIzobrazba = new JComboBox<>();
 
         btnSave = new JButton(mode == EmployeeFormMode.CREATE ? "Ustvari" : "Posodobi");
 
@@ -69,42 +70,56 @@ public class AddEmployee extends JDialog {
         add(new JLabel("Telefon")); add(txtTelefon);
         add(new JLabel("Plača")); add(txtPlaca);
         add(new JLabel("Datum (YYYY-MM-DD)")); add(txtDatum);
+
         add(new JLabel("Delovno mesto")); add(cbDelovnoMesto);
         add(new JLabel("Oddelek")); add(cbOddelek);
         add(new JLabel("Kraj")); add(cbKraj);
+        add(new JLabel("Izobrazba")); add(cbIzobrazba);
+
         add(new JLabel()); add(btnSave);
 
         btnSave.addActionListener(e -> onSave());
     }
 
-
     private void loadCombos() {
-        ResultSet rs = null;
         try {
-            rs = controller.getDelovnaMesta();
-            while (rs.next()) {
-                cbDelovnoMesto.addItem(new Item(rs.getInt("id"), rs.getString("naziv")));
+            // 1) delovna mesta
+            try (ResultSet rs = controller.getDelovnaMesta()) {
+                while (rs.next()) {
+                    cbDelovnoMesto.addItem(new Item(rs.getInt("id"), rs.getString("naziv")));
+                }
             }
-            closeQuietly(rs);
 
-            rs = controller.getOddelki();
-            while (rs.next()) {
-                cbOddelek.addItem(new Item(rs.getInt("id"), rs.getString("naziv")));
-            }
-            closeQuietly(rs);
+            // 2) listener: ko se delovno mesto spremeni, osveži oddelek
+            cbDelovnoMesto.addActionListener(e -> {
+                try {
+                    refreshOddelkiForSelectedDelovnoMesto();
+                } catch (Exception ex) {
+                    showError(ex);
+                }
+            });
 
-            rs = controller.getKraji();
-            while (rs.next()) {
-                cbKraj.addItem(new Item(rs.getInt("id"), rs.getString("naziv")));
+            // 3) inicialno napolni oddelek glede na trenutno izbrano delovno mesto
+            refreshOddelkiForSelectedDelovnoMesto();
+
+            // 4) kraji
+            try (ResultSet rs = controller.getKraji()) {
+                while (rs.next()) {
+                    cbKraj.addItem(new Item(rs.getInt("id"), rs.getString("ime")));
+                }
             }
-            closeQuietly(rs);
+
+            // 5) izobrazba
+            try (ResultSet rs = controller.getIzobrazba()) {
+                while (rs.next()) {
+                    cbIzobrazba.addItem(new Item(rs.getInt("id"), rs.getString("naziv")));
+                }
+            }
 
         } catch (Exception e) {
-            closeQuietly(rs);
             showError(e);
         }
     }
-
 
     private void loadEmployee() {
         ResultSet rs = null;
@@ -123,9 +138,25 @@ public class AddEmployee extends JDialog {
                 int oddelekId = rs.getInt("oddelek_id");
                 int krajId = rs.getInt("kraj_id");
 
+                // če tvoja get_employee_by_id vrača izobrazba_id, super:
+                int izobrazbaId = 0;
+                try {
+                    izobrazbaId = rs.getInt("izobrazba_id");
+                } catch (SQLException ignored) {
+                    // če stolpec ne obstaja v ResultSetu, pusti default
+                }
+
                 selectComboById(cbDelovnoMesto, delovnoMestoId);
+
+                // refresh oddelkov po izbiri delovnega mesta
+                refreshOddelkiForSelectedDelovnoMesto();
+
                 selectComboById(cbOddelek, oddelekId);
                 selectComboById(cbKraj, krajId);
+
+                if (izobrazbaId > 0) {
+                    selectComboById(cbIzobrazba, izobrazbaId);
+                }
             }
 
             closeQuietly(rs);
@@ -146,16 +177,28 @@ public class AddEmployee extends JDialog {
         }
     }
 
+    private void refreshOddelkiForSelectedDelovnoMesto() throws Exception {
+        Item dm = (Item) cbDelovnoMesto.getSelectedItem();
+        if (dm == null) return;
 
+        cbOddelek.removeAllItems();
+
+        try (ResultSet rs = controller.getOddelki(dm.id)) {
+            while (rs.next()) {
+                cbOddelek.addItem(new Item(rs.getInt("id"), rs.getString("naziv")));
+            }
+        }
+    }
 
     private void onSave() {
         try {
+
             Item dm = (Item) cbDelovnoMesto.getSelectedItem();
             Item od = (Item) cbOddelek.getSelectedItem();
             Item kr = (Item) cbKraj.getSelectedItem();
-
-            if (dm == null || od == null || kr == null) {
-                JOptionPane.showMessageDialog(this, "Izberi delovno mesto, oddelek in kraj.");
+            Item iz = (Item) cbIzobrazba.getSelectedItem();
+            if (dm == null || od == null || kr == null || iz == null) {
+                JOptionPane.showMessageDialog(this, "Izberi delovno mesto, oddelek, kraj in izobrazbo.");
                 return;
             }
 
@@ -172,6 +215,8 @@ public class AddEmployee extends JDialog {
 
             if (mode == EmployeeFormMode.CREATE) {
 
+
+
                 int newId = controller.addEmployee(
                         ime,
                         priimek,
@@ -182,13 +227,16 @@ public class AddEmployee extends JDialog {
                         dm.id,
                         od.id,
                         kr.id,
-                        1
+                        iz.id
                 );
+
 
                 JOptionPane.showMessageDialog(this, "Ustvarjen zaposleni. ID = " + newId);
 
             } else {
 
+                // Če tvoj AppController/update_employee še nima izobrazbe, moraš to dodati.
+                // Spodnji klic predpostavlja update z izobrazbo:
                 controller.updateEmployee(
                         employeeId,
                         ime,
@@ -199,7 +247,8 @@ public class AddEmployee extends JDialog {
                         datum,
                         dm.id,
                         od.id,
-                        kr.id
+                        kr.id,
+                        iz.id
                 );
 
                 JOptionPane.showMessageDialog(this, "Posodobljeno.");
@@ -211,7 +260,6 @@ public class AddEmployee extends JDialog {
             showError(e);
         }
     }
-
 
     private void showError(Exception e) {
         if (e instanceof SQLException se) {

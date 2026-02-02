@@ -141,7 +141,6 @@ public class MainWindow extends JFrame {
 
         JTable t = new JTable(model);
 
-        // table styling (bo še enkrat nastavljen v applyUi)
         t.setRowHeight(UiConfig.TABLE_ROW_H);
         t.setFont(UiConfig.FONT_BASE);
         t.setBackground(UiConfig.BG_CARD);
@@ -154,7 +153,6 @@ public class MainWindow extends JFrame {
         header.setForeground(UiConfig.TABLE_HEADER_FG);
         header.setFont(UiConfig.FONT_H2);
 
-        // sorter (plača)
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
         sorter.setComparator(5, Comparator.comparingDouble(v -> {
             if (v == null) return 0.0;
@@ -172,7 +170,6 @@ public class MainWindow extends JFrame {
     }
 
     private void applyUi() {
-        // root
         getContentPane().setBackground(UiConfig.BG_APP);
 
         if (mainPanel != null) {

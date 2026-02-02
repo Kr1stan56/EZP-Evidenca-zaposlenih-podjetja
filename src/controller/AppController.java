@@ -8,9 +8,6 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.*;
-import java.util.Map;
-import java.util.HashMap;
-
 
 public class AppController {
 
@@ -39,11 +36,9 @@ public class AppController {
         }
     }
 
-
-
     private void loadUiConfig() throws Exception {
 
-        // reset (da se vidi, če kaj manjka)
+        // reset
         UiConfig.FONT_BASE = null;
         UiConfig.FONT_H1 = null;
         UiConfig.FONT_H2 = null;
@@ -60,20 +55,17 @@ public class AppController {
         UiConfig.SUCCESS = null;
         UiConfig.DANGER = null;
 
-        // če teh polj še nimaš v UiConfig, jih dodaj (public static Color ...)
         UiConfig.PRIMARY_TEXT = null;
         UiConfig.TABLE_HEADER_BG = null;
         UiConfig.TABLE_HEADER_FG = null;
         UiConfig.TABLE_GRID = null;
 
-        // int-e lahko resetiraš na -1, da strogo preverjaš
         UiConfig.PAD = -1;
         UiConfig.PAD_INNER = -1;
         UiConfig.BTN_W = -1;
         UiConfig.BTN_H = -1;
         UiConfig.TABLE_ROW_H = -1;
 
-        // icon gumbi (imaš v bazi)
         UiConfig.BTN_ICON_W = -1;
         UiConfig.BTN_ICON_H = -1;
 
@@ -117,9 +109,7 @@ public class AppController {
                         case "ui.color.table.header.bg" -> UiConfig.TABLE_HEADER_BG = Color.decode(v);
                         case "ui.color.table.header.fg" -> UiConfig.TABLE_HEADER_FG = Color.decode(v);
                         case "ui.color.table.grid"      -> UiConfig.TABLE_GRID = Color.decode(v);
-                        case "ui.color.table.bg" -> UiConfig.TABLE_BG = Color.decode(v);
-
-
+                        case "ui.color.table.bg"        -> UiConfig.TABLE_BG = Color.decode(v);
 
                         case "ui.pad.outer" -> UiConfig.PAD = Integer.parseInt(v);
                         case "ui.pad.inner" -> UiConfig.PAD_INNER = Integer.parseInt(v);
@@ -132,8 +122,7 @@ public class AppController {
 
                         case "ui.table.row.h" -> UiConfig.TABLE_ROW_H = Integer.parseInt(v);
 
-                        default -> {
-                        }
+                        default -> { }
                     }
                 }
 
@@ -158,9 +147,8 @@ public class AppController {
                 if (UiConfig.TABLE_ROW_H < 0) missing.append(" ui.table.row.h");
 
                 if (UiConfig.PRIMARY_TEXT == null) missing.append(" ui.color.primary.text");
-                if (UiConfig.TABLE_HEADER_BG == null) missing.append(" ui.color.table.bg");
+                if (UiConfig.TABLE_HEADER_BG == null) missing.append(" ui.color.table.header.bg");
                 if (UiConfig.TABLE_BG == null) missing.append(" ui.color.table.bg");
-
                 if (UiConfig.TABLE_HEADER_FG == null) missing.append(" ui.color.table.header.fg");
                 if (UiConfig.TABLE_GRID == null) missing.append(" ui.color.table.grid");
                 if (UiConfig.BTN_ICON_W < 0) missing.append(" ui.btn.icon.w");
@@ -173,12 +161,9 @@ public class AppController {
         }
     }
 
-
-
     private void showLoginWindow() {
         loginWindow = new LoginWindow();
         loginWindow.setVisible(true);
-
         loginWindow.getBtnLogin().addActionListener(e -> checkLogin());
     }
 
@@ -205,32 +190,24 @@ public class AppController {
     }
 
     public void loadEmployees(DefaultTableModel model) throws Exception {
-        Connection conn = db.getConnection();
+        try (PreparedStatement ps = db.getConnection().prepareStatement("SELECT * FROM get_all_employees()");
+             ResultSet rs = ps.executeQuery()) {
 
-        PreparedStatement ps = conn.prepareStatement("SELECT * FROM get_all_employees()");
-        ResultSet rs = ps.executeQuery();
+            model.setRowCount(0);
 
-        model.setRowCount(0);
-
-        while (rs.next()) {
-            model.addRow(new Object[]{
-                    rs.getInt(1),
-                    rs.getString(2),
-                    rs.getString(3),
-                    rs.getString(4),
-                    rs.getString(5),
-                    rs.getFloat(6),
-                    rs.getDate(7),
-                    rs.getString(8),
-                    rs.getString(9),
-                    rs.getString(10)
-            });
+            while (rs.next()) {
+                model.addRow(new Object[]{
+                        rs.getInt("id"),
+                        rs.getString("ime"),
+                        rs.getString("priimek"),
+                        rs.getString("delovno_mesto"),
+                        rs.getString("oddelek"),
+                        rs.getFloat("placa"),
+                        rs.getDate("datum_zaposlitve")
+                });
+            }
         }
-
-        rs.close();
-        ps.close();
     }
-
 
 
     public int addEmployee(
@@ -246,34 +223,26 @@ public class AppController {
             int izobrazbaId
     ) throws Exception {
 
-        Connection conn = db.getConnection();
+        try (PreparedStatement ps = db.getConnection().prepareStatement(
+                "SELECT add_employee(?, ?, ?, ?, ?, ?::date, ?, ?, ?, ?)"
+        )) {
+            ps.setString(1, ime);
+            ps.setString(2, priimek);
+            ps.setString(3, email);
+            ps.setString(4, telefon);
+            ps.setFloat(5, placa);
+            ps.setDate(6, datumZaposlitve);
+            ps.setInt(7, delovnoMestoId);
+            ps.setInt(8, oddelekId);
+            ps.setInt(9, krajId);
+            ps.setInt(10, izobrazbaId);
 
-        PreparedStatement ps = conn.prepareStatement(
-                "SELECT add_employee(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        );
-
-        ps.setString(1, ime);
-        ps.setString(2, priimek);
-        ps.setString(3, email);
-        ps.setString(4, telefon);
-        ps.setFloat(5, placa);
-        ps.setDate(6, datumZaposlitve);
-        ps.setInt(7, delovnoMestoId);
-        ps.setInt(8, oddelekId);
-        ps.setInt(9, krajId);
-        ps.setInt(10, izobrazbaId);
-
-        ResultSet rs = ps.executeQuery();
-        rs.next();
-        int newId = rs.getInt(1);
-
-        rs.close();
-        ps.close();
-
-        return newId;
+            try (ResultSet rs = ps.executeQuery()) {
+                rs.next();
+                return rs.getInt(1);
+            }
+        }
     }
-
-
 
     public ResultSet getDelovnaMesta() throws Exception {
         PreparedStatement ps = db.getConnection().prepareStatement(
@@ -282,10 +251,11 @@ public class AppController {
         return ps.executeQuery();
     }
 
-    public ResultSet getOddelki() throws Exception {
+    public ResultSet getOddelki(int delovnoMestoId) throws Exception {
         PreparedStatement ps = db.getConnection().prepareStatement(
-                "SELECT * FROM get_oddelki()"
+                "SELECT * FROM get_oddelki(?)"
         );
+        ps.setInt(1, delovnoMestoId);
         return ps.executeQuery();
     }
 
@@ -296,7 +266,12 @@ public class AppController {
         return ps.executeQuery();
     }
 
-
+    public ResultSet getIzobrazba() throws Exception {
+        PreparedStatement ps = db.getConnection().prepareStatement(
+                "SELECT * FROM get_izobrazba()"
+        );
+        return ps.executeQuery();
+    }
 
     public ResultSet getEmployeeById(int employeeId) throws Exception {
         PreparedStatement ps = db.getConnection().prepareStatement(
@@ -306,6 +281,7 @@ public class AppController {
         return ps.executeQuery();
     }
 
+    // ✅ updateEmployee: MANY-TO-MANY -> posodobi delovno_mesto_id + oddelek_id + kraj_id + izobrazba_id
     public void updateEmployee(
             int id,
             String ime,
@@ -316,27 +292,29 @@ public class AppController {
             Date datum,
             int delovnoMestoId,
             int oddelekId,
-            int krajId
+            int krajId,
+            int izobrazbaId
     ) throws Exception {
 
-        PreparedStatement ps = db.getConnection().prepareStatement(
-                "SELECT update_employee(?, ?, ?, ?, ?, ?::numeric, ?::date, ?, ?, ?)"
-        );
+        try (PreparedStatement ps = db.getConnection().prepareStatement(
+                "SELECT update_employee(?, ?, ?, ?, ?, ?::numeric, ?::date, ?, ?, ?, ?)"
+        )) {
+            ps.setInt(1, id);
+            ps.setString(2, ime);
+            ps.setString(3, priimek);
+            ps.setString(4, email);
+            ps.setString(5, telefon);
+            ps.setFloat(6, placa);
+            ps.setDate(7, datum);
+            ps.setInt(8, delovnoMestoId);
+            ps.setInt(9, oddelekId);
+            ps.setInt(10, krajId);
+            ps.setInt(11, izobrazbaId);
 
-        ps.setInt(1, id);
-        ps.setString(2, ime);
-        ps.setString(3, priimek);
-        ps.setString(4, email);
-        ps.setString(5, telefon);
-        ps.setFloat(6, placa);
-        ps.setDate(7, datum);
-        ps.setInt(8, delovnoMestoId);
-        ps.setInt(9, oddelekId);
-        ps.setInt(10, krajId);
-
-        ps.execute();
-        ps.close();
+            ps.execute();
+        }
     }
+
     public void deleteEmployee(int employeeId) throws Exception {
         try (PreparedStatement ps = db.getConnection().prepareStatement(
                 "SELECT delete_employee(?)"
@@ -345,11 +323,8 @@ public class AppController {
             ps.execute();
         }
     }
+
     public void refreshApp() throws Exception {
         loadUiConfig();
     }
-
-
-
-
 }
