@@ -281,7 +281,6 @@ public class AppController {
         return ps.executeQuery();
     }
 
-    // ✅ updateEmployee: MANY-TO-MANY -> posodobi delovno_mesto_id + oddelek_id + kraj_id + izobrazba_id
     public void updateEmployee(
             int id,
             String ime,

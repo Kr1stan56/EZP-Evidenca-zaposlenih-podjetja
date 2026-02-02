@@ -83,14 +83,12 @@ public class AddEmployee extends JDialog {
 
     private void loadCombos() {
         try {
-            // 1) delovna mesta
             try (ResultSet rs = controller.getDelovnaMesta()) {
                 while (rs.next()) {
                     cbDelovnoMesto.addItem(new Item(rs.getInt("id"), rs.getString("naziv")));
                 }
             }
 
-            // 2) listener: ko se delovno mesto spremeni, osveži oddelek
             cbDelovnoMesto.addActionListener(e -> {
                 try {
                     refreshOddelkiForSelectedDelovnoMesto();
@@ -99,17 +97,14 @@ public class AddEmployee extends JDialog {
                 }
             });
 
-            // 3) inicialno napolni oddelek glede na trenutno izbrano delovno mesto
             refreshOddelkiForSelectedDelovnoMesto();
 
-            // 4) kraji
             try (ResultSet rs = controller.getKraji()) {
                 while (rs.next()) {
                     cbKraj.addItem(new Item(rs.getInt("id"), rs.getString("ime")));
                 }
             }
 
-            // 5) izobrazba
             try (ResultSet rs = controller.getIzobrazba()) {
                 while (rs.next()) {
                     cbIzobrazba.addItem(new Item(rs.getInt("id"), rs.getString("naziv")));

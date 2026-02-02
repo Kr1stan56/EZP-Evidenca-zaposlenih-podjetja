@@ -11,7 +11,7 @@ public class Database {
             "jdbc:postgresql://aws-1-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require";
 
     private final String user = "postgres.vuhabmtcbwlafsfwzyzu";
-    private final String pass = "ej3EFzR8BD3cI0Bf"; // po testu RESET
+    private final String pass = "ej3EFzR8BD3cI0Bf";
 
     public void connect() {
         try {
