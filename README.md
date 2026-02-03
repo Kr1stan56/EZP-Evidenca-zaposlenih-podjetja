@@ -7,7 +7,7 @@
   - PostgreSQL JDBC driver (`postgresql-42.x.x.jar`)
   - jBCrypt (`jbcrypt-0.4.jar`)
 
-## Knjižnice (kjer so pri tebi)
+## Knjižnice 
 V projektu imaš mapo:
 `potrebna librarija za importat/`
 
@@ -19,7 +19,7 @@ V njej morata biti ti dve datoteki:
 
 ## Zagon v IntelliJ IDEA (priporočeno)
 1. Odpri projekt v IntelliJ.
-2. Pojdi na: **File → Project Structure → Libraries**
+2. Pojdi na: **File → Project Structure → Libraries** (bodi pozoren da je modul ustvarjen Project Structure → Modules )
 3. Klikni **+ → Java** in izberi oba `.jar` iz mape:
    `potrebna librarija za importat/`
 4. Klikni **Apply → OK**
