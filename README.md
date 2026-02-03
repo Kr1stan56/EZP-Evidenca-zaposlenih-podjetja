@@ -3,7 +3,7 @@
 
 ## Zahteve
 - JDK 17+ (lahko tudi 11, priporočeno 17)
-- 2x `.jar` knjižnici (brez Maven/Gradle):
+- 2x `.jar` knjižnici (Java):
   - PostgreSQL JDBC driver (`postgresql-42.x.x.jar`)
   - jBCrypt (`jbcrypt-0.4.jar`)
 
