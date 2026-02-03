@@ -16,7 +16,6 @@ public class MainWindow extends JFrame {
 
     private final JTable employeeTable;
 
-    // UI references (da jih lahko applyUi() restyla po refreshu)
     private JPanel mainPanel;
     private JPanel headerPanel;
     private JPanel topPanel;
@@ -37,7 +36,6 @@ public class MainWindow extends JFrame {
 
         setTitle("EZP – Evidenca zaposlenih podjetja");
 
-        // Če hočeš 100% DB: premakni w/h v DB ključe in beri v UiConfig
         setSize(1000, 600);
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -57,7 +55,6 @@ public class MainWindow extends JFrame {
         topPanel = new JPanel(new BorderLayout());
         tableScroll = new JScrollPane(employeeTable);
 
-        // header (dashboard)
         headerPanel.setOpaque(false);
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
         headerPanel.setBorder(new EmptyBorder(0, 4, 10, 0));
@@ -66,17 +63,14 @@ public class MainWindow extends JFrame {
         lblDashboard.setAlignmentX(Component.LEFT_ALIGNMENT);
         headerPanel.add(lblDashboard);
 
-        // top bar
         titleLabel = new JLabel("Seznam zaposlenih");
         topPanel.add(titleLabel, BorderLayout.WEST);
 
         buttonBar = buildButtonBar();
         topPanel.add(buttonBar, BorderLayout.EAST);
 
-        // scrollpane
         tableScroll.setBorder(BorderFactory.createLineBorder(UiConfig.BORDER));
 
-        // north wrapper
         JPanel north = new JPanel();
         north.setOpaque(false);
         north.setLayout(new BoxLayout(north, BoxLayout.Y_AXIS));
@@ -86,7 +80,7 @@ public class MainWindow extends JFrame {
         mainPanel.add(north, BorderLayout.NORTH);
         mainPanel.add(tableScroll, BorderLayout.CENTER);
 
-        applyUi(); // initial style apply
+        applyUi();
 
         return mainPanel;
     }
@@ -124,7 +118,6 @@ public class MainWindow extends JFrame {
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         b.setPreferredSize(new Dimension(w, h));
 
-        // style (bo še enkrat nastavljen v applyUi)
         b.setFont(UiConfig.FONT_BASE);
         b.setBackground(bg);
         b.setForeground(fg);
@@ -200,13 +193,13 @@ public class MainWindow extends JFrame {
         restyleButton(btnEdit, UiConfig.SUCCESS, UiConfig.PRIMARY_TEXT, UiConfig.BTN_W, UiConfig.BTN_H);
         restyleButton(btnDelete, UiConfig.DANGER, UiConfig.PRIMARY_TEXT, UiConfig.BTN_W, UiConfig.BTN_H);
 
-        //
+
         if (tableScroll != null) {
             tableScroll.getViewport().setBackground(UiConfig.BG_CARD);
             tableScroll.setBorder(BorderFactory.createLineBorder(UiConfig.BORDER));
         }
 
-        // table
+
         if (employeeTable != null) {
             employeeTable.setRowHeight(UiConfig.TABLE_ROW_H);
             employeeTable.setFont(UiConfig.FONT_BASE);
@@ -243,13 +236,12 @@ public class MainWindow extends JFrame {
                 employeeTable.getRowSorter().setSortKeys(null);
             }
 
-            // 1) reload UiConfig iz baze
+
             controller.refreshApp();
 
-            // 2) apply novih nastavitev na komponente
+
             applyUi();
 
-            // 3) reload data
             controller.loadEmployees((DefaultTableModel) employeeTable.getModel());
 
             SwingUtilities.updateComponentTreeUI(this);
