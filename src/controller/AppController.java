@@ -38,7 +38,6 @@ public class AppController {
 
     private void loadUiConfig() throws Exception {
 
-        // reset
         UiConfig.FONT_BASE = null;
         UiConfig.FONT_H1 = null;
         UiConfig.FONT_H2 = null;
