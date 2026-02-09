@@ -83,12 +83,14 @@
 
         private void loadCombos() {
             try {
+                // 1. Naloži delovna mesta
                 try (ResultSet rs = controller.getDelovnaMesta()) {
                     while (rs.next()) {
                         cbDelovnoMesto.addItem(new Item(rs.getInt("id"), rs.getString("naziv")));
                     }
                 }
 
+                // 2. Dodaj listener za spremembe delovnega mesta
                 cbDelovnoMesto.addActionListener(e -> {
                     try {
                         refreshOddelkiForSelectedDelovnoMesto();
@@ -97,8 +99,13 @@
                     }
                 });
 
-                refreshOddelkiForSelectedDelovnoMesto();
+                // 3. Izberi prvo delovno mesto (če obstaja) in naloži oddelke
+                if (cbDelovnoMesto.getItemCount() > 0) {
+                    cbDelovnoMesto.setSelectedIndex(0);
+                    refreshOddelkiForSelectedDelovnoMesto();
+                }
 
+                // 4. Naloži ostale podatke
                 try (ResultSet rs = controller.getKraji()) {
                     while (rs.next()) {
                         cbKraj.addItem(new Item(rs.getInt("id"), rs.getString("ime")));
@@ -133,17 +140,14 @@
                     int oddelekId = rs.getInt("oddelek_id");
                     int krajId = rs.getInt("kraj_id");
 
-                    // če tvoja get_employee_by_id vrača izobrazba_id, super:
                     int izobrazbaId = 0;
                     try {
                         izobrazbaId = rs.getInt("izobrazba_id");
                     } catch (SQLException ignored) {
-                        // če stolpec ne obstaja v ResultSetu, pusti default
                     }
 
                     selectComboById(cbDelovnoMesto, delovnoMestoId);
 
-                    // refresh oddelkov po izbiri delovnega mesta
                     refreshOddelkiForSelectedDelovnoMesto();
 
                     selectComboById(cbOddelek, oddelekId);
