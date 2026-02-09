@@ -13,7 +13,6 @@ public class LoginWindow extends JFrame {
     private JButton btnRegister;
     private AppController controller;
 
-    // DODAJTE KONSTRUKTOR BREZ PARAMETRA
     public LoginWindow() {
         this(null);
     }
