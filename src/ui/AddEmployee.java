@@ -38,7 +38,7 @@ public class AddEmployee extends JDialog {
         this.employeeId = employeeId;
 
         setTitle(mode == EmployeeFormMode.CREATE ? "DODAJ ZAPOSLENEGA" : "UREDI ZAPOSLENEGA");
-        setSize(550, 550);
+        setSize(600, 550);
         setLocationRelativeTo(owner);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
@@ -51,21 +51,18 @@ public class AddEmployee extends JDialog {
     }
 
     private void initUI() {
-        JPanel mainPanel = new JPanel(new BorderLayout(UiConfig.GAP_LARGE, UiConfig.GAP_LARGE));
-        mainPanel.setBackground(UiConfig.BG_APP);
-        mainPanel.setBorder(new EmptyBorder(UiConfig.PAD_LARGE, UiConfig.PAD_LARGE, UiConfig.PAD_LARGE, UiConfig.PAD_LARGE));
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBackground(Color.WHITE);
+        mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         JLabel titleLabel = new JLabel(mode == EmployeeFormMode.CREATE ? "DODAJ ZAPOSLENEGA" : "UREDI ZAPOSLENEGA");
-        titleLabel.setFont(UiConfig.FONT_H2_BOLD);
-        titleLabel.setForeground(UiConfig.TEXT);
-        titleLabel.setBorder(new EmptyBorder(0, 0, UiConfig.PAD, 0));
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        titleLabel.setForeground(new Color(50, 50, 50));
+        titleLabel.setBorder(new EmptyBorder(0, 0, 20, 0));
 
-        JPanel formPanel = new JPanel(new GridLayout(0, 2, UiConfig.GAP, UiConfig.GAP));
-        formPanel.setBackground(UiConfig.BG_CARD);
-        formPanel.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(UiConfig.BORDER_BOLD, UiConfig.BORDER_WIDTH),
-                new EmptyBorder(UiConfig.PAD_INNER_LARGE, UiConfig.PAD_INNER_LARGE, UiConfig.PAD_INNER_LARGE, UiConfig.PAD_INNER_LARGE)
-        ));
+        JPanel formPanel = new JPanel(new GridLayout(0, 2, 15, 15));
+        formPanel.setBackground(Color.WHITE);
+        formPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         txtIme = createTextField();
         txtPriimek = createTextField();
@@ -97,37 +94,13 @@ public class AddEmployee extends JDialog {
         formPanel.add(createLabel("KRAJ:"));
         formPanel.add(cbKraj);
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, UiConfig.GAP, 0));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
         buttonPanel.setOpaque(false);
-        buttonPanel.setBorder(new EmptyBorder(UiConfig.PAD, 0, 0, 0));
+        buttonPanel.setBorder(new EmptyBorder(20, 0, 0, 0));
 
-        btnSave = new JButton(mode == EmployeeFormMode.CREATE ? "USTVARI" : "POSODOBI");
-        btnSave.setFont(UiConfig.FONT_BASE_BOLD);
-        btnSave.setBackground(new Color(46, 204, 113)); // SVETLO ZELENA
-        btnSave.setForeground(Color.WHITE);
-        btnSave.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(39, 174, 96), UiConfig.BORDER_WIDTH), // TEMNEJŠA ZELENA
-                new EmptyBorder(UiConfig.PAD_INNER, UiConfig.PAD_INNER_LARGE, UiConfig.PAD_INNER, UiConfig.PAD_INNER_LARGE)
-        ));
-        btnSave.setFocusPainted(false);
-        btnSave.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btnSave.setOpaque(true);
-        btnSave.setBorderPainted(true);
-        btnSave.setMinimumSize(new Dimension(UiConfig.BTN_W_LARGE, UiConfig.BTN_H));
-
-        btnCancel = new JButton("PREKLIČI");
-        btnCancel.setFont(UiConfig.FONT_BASE_BOLD);
-        btnCancel.setBackground(new Color(231, 76, 60)); // SVETLO RDEČA
-        btnCancel.setForeground(Color.WHITE);
-        btnCancel.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(192, 57, 43), UiConfig.BORDER_WIDTH), // TEMNEJŠA RDEČA
-                new EmptyBorder(UiConfig.PAD_INNER, UiConfig.PAD_INNER_LARGE, UiConfig.PAD_INNER, UiConfig.PAD_INNER_LARGE)
-        ));
-        btnCancel.setFocusPainted(false);
-        btnCancel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btnCancel.setOpaque(true);
-        btnCancel.setBorderPainted(true);
-        btnCancel.setMinimumSize(new Dimension(UiConfig.BTN_W, UiConfig.BTN_H));
+        btnSave = createButton(mode == EmployeeFormMode.CREATE ? "USTVARI" : "POSODOBI",
+                new Color(46, 204, 113), Color.WHITE, 120, 40);
+        btnCancel = createButton("PREKLIČI", new Color(231, 76, 60), Color.WHITE, 120, 40);
 
         btnSave.addActionListener(e -> onSave());
         btnCancel.addActionListener(e -> dispose());
@@ -136,7 +109,16 @@ public class AddEmployee extends JDialog {
         buttonPanel.add(btnCancel);
 
         mainPanel.add(titleLabel, BorderLayout.NORTH);
-        mainPanel.add(formPanel, BorderLayout.CENTER);
+
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.setBackground(Color.WHITE);
+        centerPanel.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(new Color(200, 200, 200), 2),
+                new EmptyBorder(0, 0, 0, 0)
+        ));
+        centerPanel.add(formPanel, BorderLayout.CENTER);
+
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         setContentPane(mainPanel);
@@ -146,29 +128,30 @@ public class AddEmployee extends JDialog {
 
     private JTextField createTextField() {
         JTextField field = new JTextField();
-        field.setFont(UiConfig.FONT_BASE);
-        field.setForeground(Color.BLACK); // ČRNA BARVA ZA TEKST
-        field.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(200, 200, 200), UiConfig.BORDER_WIDTH), // SVETLO SIVA MEJA
-                new EmptyBorder(8, 10, 8, 10)
-        ));
+        field.setFont(new Font("Arial", Font.PLAIN, 14));
+        field.setForeground(Color.BLACK);
         field.setBackground(Color.WHITE);
-        field.setMinimumSize(new Dimension(0, 35));
-        field.setPreferredSize(new Dimension(0, 35));
+
+        // ENOSTAVNA MEJA BREZ NOTRANJIH MEJ
+        field.setBorder(BorderFactory.createLineBorder(new Color(150, 150, 150), 1));
+
+        field.setMinimumSize(new Dimension(200, 35));
+        field.setPreferredSize(new Dimension(200, 35));
         return field;
     }
 
     private JComboBox<Item> createComboBox() {
         JComboBox<Item> combo = new JComboBox<>();
-        combo.setFont(UiConfig.FONT_BASE);
-        combo.setForeground(Color.BLACK); // ČRNA BARVA ZA TEKST
+        combo.setFont(new Font("Arial", Font.PLAIN, 14));
+        combo.setForeground(Color.BLACK);
         combo.setBackground(Color.WHITE);
-        combo.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(200, 200, 200), UiConfig.BORDER_WIDTH), // SVETLO SIVA MEJA
-                new EmptyBorder(5, 8, 5, 8)
-        ));
 
-        // Nastavimo renderer za pravilno prikazovanje teksta
+        // ENOSTAVNA MEJA BREZ NOTRANJIH MEJ
+        combo.setBorder(BorderFactory.createLineBorder(new Color(150, 150, 150), 1));
+
+        combo.setMinimumSize(new Dimension(200, 35));
+        combo.setPreferredSize(new Dimension(200, 35));
+
         combo.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value,
@@ -177,8 +160,11 @@ public class AddEmployee extends JDialog {
                 if (c instanceof JLabel) {
                     JLabel label = (JLabel) c;
                     label.setForeground(Color.BLACK);
-                    label.setBackground(isSelected ? new Color(52, 152, 219) : Color.WHITE);
+                    label.setBackground(isSelected ? new Color(200, 220, 255) : Color.WHITE);
                     label.setOpaque(true);
+                    label.setFont(new Font("Arial", Font.PLAIN, 14));
+                    // ENOSTAVNA MEJA ZA ELEMENTE
+                    label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
                 }
                 return c;
             }
@@ -189,14 +175,38 @@ public class AddEmployee extends JDialog {
 
     private JLabel createLabel(String text) {
         JLabel label = new JLabel(text);
-        label.setFont(UiConfig.FONT_BASE_BOLD);
-        label.setForeground(new Color(60, 60, 60)); // TEMNO SIVA
+        label.setFont(new Font("Arial", Font.BOLD, 14));
+        label.setForeground(new Color(70, 70, 70));
+        label.setHorizontalAlignment(SwingConstants.RIGHT);
         return label;
+    }
+
+    private JButton createButton(String text, Color bgColor, Color fgColor, int width, int height) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Arial", Font.BOLD, 14));
+        button.setBackground(bgColor);
+        button.setForeground(fgColor);
+
+        // ENOSTAVNA MEJA ZA GUMBE
+        button.setBorder(BorderFactory.createLineBorder(bgColor.darker(), 2));
+
+        button.setFocusPainted(false);
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        button.setOpaque(true);
+        button.setBorderPainted(true);
+        button.setMinimumSize(new Dimension(width, height));
+        button.setPreferredSize(new Dimension(width, height));
+
+        return button;
     }
 
     private void loadCombos() {
         ResultSet rs = null;
         try {
+            cbDelovnoMesto.removeAllItems();
+            cbOddelek.removeAllItems();
+            cbKraj.removeAllItems();
+
             rs = controller.getDelovnaMesta();
             while (rs.next()) {
                 cbDelovnoMesto.addItem(new Item(rs.getInt("id"), rs.getString("naziv")));
@@ -368,7 +378,12 @@ public class AddEmployee extends JDialog {
     static class Item {
         int id;
         String text;
-        Item(int id, String text) { this.id = id; this.text = text; }
-        public String toString() { return text; }
+        Item(int id, String text) {
+            this.id = id;
+            this.text = text != null ? text : "";
+        }
+        public String toString() {
+            return text != null ? text : "";
+        }
     }
 }

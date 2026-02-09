@@ -130,32 +130,8 @@ public class MainWindow extends JFrame {
         userInfoPanel.setLayout(new BoxLayout(userInfoPanel, BoxLayout.X_AXIS));
         userInfoPanel.setBorder(new EmptyBorder(UiConfig.PAD_INNER, UiConfig.PAD, UiConfig.PAD_INNER, UiConfig.PAD));
 
-        btnLogout = new JButton("ODJAVA");
-        btnLogout.setFont(UiConfig.FONT_BASE_BOLD);
-        btnLogout.setForeground(UiConfig.DANGER);
-        btnLogout.setBackground(UiConfig.BG_CARD);
-        btnLogout.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(UiConfig.DANGER, UiConfig.BORDER_WIDTH),
-                new EmptyBorder(UiConfig.PAD_INNER, UiConfig.PAD_INNER, UiConfig.PAD_INNER, UiConfig.PAD_INNER)
-        ));
-        btnLogout.setFocusPainted(false);
-        btnLogout.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btnLogout.setOpaque(true);
-        btnLogout.setBorderPainted(true);
-        btnLogout.setMinimumSize(new Dimension(UiConfig.BTN_W, UiConfig.BTN_H));
-
-        btnLogout.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                btnLogout.setBackground(UiConfig.DANGER);
-                btnLogout.setForeground(Color.WHITE);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                btnLogout.setBackground(UiConfig.BG_CARD);
-                btnLogout.setForeground(UiConfig.DANGER);
-            }
-        });
-
-        btnLogout.addActionListener(e -> onLogout());
+        btnLogout = createStyledButton("ODJAVA", UiConfig.DANGER, Color.WHITE,
+                UiConfig.BTN_W, UiConfig.BTN_H, e -> onLogout());
 
         JPanel userTextPanel = new JPanel();
         userTextPanel.setOpaque(false);
@@ -248,17 +224,17 @@ public class MainWindow extends JFrame {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, UiConfig.GAP, 0));
         p.setOpaque(false);
 
-        btnRefresh = createButton("⟳ OSVEŽI", UiConfig.BG_BAR, UiConfig.TEXT_ACCENT,
-                UiConfig.BTN_W, UiConfig.BTN_H, this::refreshTable);
+        btnRefresh = createStyledButton("⟳ OSVEŽI", UiConfig.BG_BAR, UiConfig.TEXT_ACCENT,
+                UiConfig.BTN_W, UiConfig.BTN_H, e -> refreshTable());
 
-        btnAdd = createButton("+ DODAJ ZAPOSLENEGA", UiConfig.PRIMARY, UiConfig.PRIMARY_TEXT,
-                UiConfig.BTN_W_LARGE, UiConfig.BTN_H, this::onAdd);
+        btnAdd = createStyledButton("+ DODAJ ZAPOSLENEGA", UiConfig.PRIMARY, UiConfig.PRIMARY_TEXT,
+                UiConfig.BTN_W_LARGE, UiConfig.BTN_H, e -> onAdd());
 
-        btnEdit = createButton("✎ UREDI", UiConfig.SUCCESS, UiConfig.PRIMARY_TEXT,
-                UiConfig.BTN_W, UiConfig.BTN_H, this::onEdit);
+        btnEdit = createStyledButton("✎ UREDI", UiConfig.SUCCESS, UiConfig.PRIMARY_TEXT,
+                UiConfig.BTN_W, UiConfig.BTN_H, e -> onEdit());
 
-        btnDelete = createButton("🗑 IZBRŠI", UiConfig.DANGER, UiConfig.PRIMARY_TEXT,
-                UiConfig.BTN_W, UiConfig.BTN_H, this::onDelete);
+        btnDelete = createStyledButton("🗑 IZBRIŠI", UiConfig.DANGER, UiConfig.PRIMARY_TEXT,
+                UiConfig.BTN_W, UiConfig.BTN_H, e -> onDelete());
 
         p.add(btnRefresh);
         p.add(btnAdd);
@@ -268,15 +244,15 @@ public class MainWindow extends JFrame {
         return p;
     }
 
-    private JButton createButton(String text, Color bg, Color fg, int w, int h, Runnable action) {
+    private JButton createStyledButton(String text, Color bg, Color fg, int w, int h, java.awt.event.ActionListener action) {
         JButton b = new JButton(text);
-        b.addActionListener(e -> action.run());
+        b.addActionListener(action);
         b.setFont(UiConfig.FONT_BASE_BOLD);
         b.setBackground(bg);
         b.setForeground(fg);
         b.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(bg.darker(), UiConfig.BORDER_WIDTH),
-                new EmptyBorder(UiConfig.PAD_INNER, UiConfig.PAD_INNER, UiConfig.PAD_INNER, UiConfig.PAD_INNER)
+                new EmptyBorder(10, 15, 10, 15)
         ));
         b.setFocusPainted(false);
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -307,7 +283,7 @@ public class MainWindow extends JFrame {
         JTable t = new JTable(model);
 
         t.setRowHeight(UiConfig.TABLE_ROW_H);
-        t.setFont(UiConfig.FONT_BASE_BOLD);
+        t.setFont(UiConfig.FONT_BASE);
         t.setBackground(UiConfig.TABLE_BG);
         t.setForeground(UiConfig.TEXT);
         t.setGridColor(UiConfig.TABLE_GRID);
@@ -324,7 +300,7 @@ public class MainWindow extends JFrame {
         header.setFont(UiConfig.FONT_H3);
         header.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, UiConfig.BORDER_WIDTH_THICK, 0, UiConfig.BORDER_ACCENT),
-                new EmptyBorder(UiConfig.PAD_INNER, UiConfig.PAD_INNER, UiConfig.PAD_INNER, UiConfig.PAD_INNER)
+                new EmptyBorder(10, 10, 10, 10)
         ));
 
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
