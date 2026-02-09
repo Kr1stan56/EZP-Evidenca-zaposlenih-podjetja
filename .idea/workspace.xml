@@ -6,7 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="0d024e94-e5fb-43c8-88ab-02fdf6567248" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controller/AppController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/controller/AppController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ui/AddEmployee.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ui/AddEmployee.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ui/LoginWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ui/LoginWindow.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ui/MainWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ui/MainWindow.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ui/UiConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ui/UiConfig.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,13 +34,13 @@
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
-    &quot;Application.Unnamed.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;develop&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Main.executor": "Run",
+    "Application.Unnamed.executor": "Run",
+    "git-widget-placeholder": "new__design"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration name="Unnamed" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="Main" />

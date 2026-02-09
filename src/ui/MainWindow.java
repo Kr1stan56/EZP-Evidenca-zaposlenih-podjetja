@@ -3,30 +3,29 @@ package ui;
 import controller.AppController;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import javax.swing.border.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
+import java.awt.event.*;
 import java.util.Comparator;
 
 public class MainWindow extends JFrame {
 
     private final AppController controller;
-
     private final JTable employeeTable;
 
-    // UI references
     private JPanel mainPanel;
     private JPanel headerPanel;
     private JPanel topPanel;
     private JPanel buttonBar;
-    private JPanel userInfoPanel; // DODANO: panel za uporabniške informacije
+    private JPanel userInfoPanel;
 
     private JLabel lblDashboard;
     private JLabel titleLabel;
-    private JLabel lblUserEmail; // DODANO: email uporabnika
-    private JLabel lblUsername;  // DODANO: username uporabnika
+    private JLabel lblUserEmail;
+    private JLabel lblUsername;
 
     private JScrollPane tableScroll;
 
@@ -34,165 +33,231 @@ public class MainWindow extends JFrame {
     private JButton btnAdd;
     private JButton btnEdit;
     private JButton btnDelete;
-    private JButton btnLogout; // DODANO: logout gumb
+    private JButton btnLogout;
 
-    // DODANO: spremenljivki za uporabniške podatke
     private String currentUserEmail;
     private String currentUsername;
 
-    // SPREMENJENO: samo en konstruktor, ki sprejema vse podatke
     public MainWindow(AppController controller, String email, String username) {
         this.controller = controller;
         this.currentUserEmail = email;
         this.currentUsername = username;
 
-        setTitle("EZP – Evidenca zaposlenih podjetja");
-        setSize(1100, 650); // POVEČANA ŠIRINA za user info
+        setTitle("EZP – EVIDENCA ZAPOSLENIH PODJETJA");
+        setSize(1200, 750);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         employeeTable = createEmployeeTable();
         setContentPane(buildUi());
+        addMouseWheelZoom();
         refreshTable();
 
         setVisible(true);
     }
 
+    private void addMouseWheelZoom() {
+        employeeTable.addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.isControlDown()) {
+                    int currentHeight = employeeTable.getRowHeight();
+                    int newHeight = currentHeight - e.getWheelRotation() * 2;
+
+                    if (newHeight >= 20 && newHeight <= 60) {
+                        employeeTable.setRowHeight(newHeight);
+                        tableScroll.revalidate();
+                        tableScroll.repaint();
+                    }
+                    e.consume();
+                }
+            }
+        });
+
+        tableScroll.addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.isControlDown()) {
+                    int currentHeight = employeeTable.getRowHeight();
+                    int newHeight = currentHeight - e.getWheelRotation() * 2;
+
+                    if (newHeight >= 20 && newHeight <= 60) {
+                        employeeTable.setRowHeight(newHeight);
+                        tableScroll.revalidate();
+                        tableScroll.repaint();
+                    }
+                    e.consume();
+                }
+            }
+        });
+
+        KeyStroke zoomIn = KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, InputEvent.CTRL_DOWN_MASK);
+        KeyStroke zoomOut = KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, InputEvent.CTRL_DOWN_MASK);
+
+        employeeTable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(zoomIn, "zoomIn");
+        employeeTable.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(zoomOut, "zoomOut");
+
+        employeeTable.getActionMap().put("zoomIn", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int currentHeight = employeeTable.getRowHeight();
+                int newHeight = currentHeight + 2;
+                if (newHeight <= 60) {
+                    employeeTable.setRowHeight(newHeight);
+                }
+            }
+        });
+
+        employeeTable.getActionMap().put("zoomOut", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int currentHeight = employeeTable.getRowHeight();
+                int newHeight = currentHeight - 2;
+                if (newHeight >= 20) {
+                    employeeTable.setRowHeight(newHeight);
+                }
+            }
+        });
+    }
+
     private JPanel buildUi() {
         mainPanel = new JPanel(new BorderLayout());
-        headerPanel = new JPanel();
-        topPanel = new JPanel(new BorderLayout());
-        tableScroll = new JScrollPane(employeeTable);
+        mainPanel.setBackground(UiConfig.BG_APP);
+        mainPanel.setBorder(new EmptyBorder(UiConfig.PAD, UiConfig.PAD, UiConfig.PAD, UiConfig.PAD));
 
-        // DODANO: User info panel (zgoraj levo)
         userInfoPanel = new JPanel();
         userInfoPanel.setOpaque(false);
         userInfoPanel.setLayout(new BoxLayout(userInfoPanel, BoxLayout.X_AXIS));
-        userInfoPanel.setBorder(new EmptyBorder(5, 10, 5, 20));
+        userInfoPanel.setBorder(new EmptyBorder(UiConfig.PAD_INNER, UiConfig.PAD, UiConfig.PAD_INNER, UiConfig.PAD));
 
-        // DODANO: Logout gumb z ikono
-        btnLogout = new JButton();
-        btnLogout.setToolTipText("Odjava");
-        btnLogout.setPreferredSize(new Dimension(50, 50));
-        btnLogout.setMinimumSize(new Dimension(50, 50));
-        btnLogout.setMaximumSize(new Dimension(50, 50));
-        btnLogout.setBorder(BorderFactory.createEmptyBorder());
-        btnLogout.setContentAreaFilled(false);
+        btnLogout = new JButton("ODJAVA");
+        btnLogout.setFont(UiConfig.FONT_BASE_BOLD);
+        btnLogout.setForeground(UiConfig.DANGER);
+        btnLogout.setBackground(UiConfig.BG_CARD);
+        btnLogout.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UiConfig.DANGER, UiConfig.BORDER_WIDTH),
+                new EmptyBorder(UiConfig.PAD_INNER, UiConfig.PAD_INNER, UiConfig.PAD_INNER, UiConfig.PAD_INNER)
+        ));
         btnLogout.setFocusPainted(false);
         btnLogout.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btnLogout.setOpaque(true);
+        btnLogout.setBorderPainted(true);
+        btnLogout.setMinimumSize(new Dimension(UiConfig.BTN_W, UiConfig.BTN_H));
 
-        // Poskusite naložiti ikono
-        try {
-            ImageIcon logoutIcon = new ImageIcon("leave.png");
-            if (logoutIcon.getImageLoadStatus() == MediaTracker.COMPLETE) {
-                Image img = logoutIcon.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
-                btnLogout.setIcon(new ImageIcon(img));
-            } else {
-                // Če ikona ne obstaja, uporabite text
-                btnLogout.setText("X");
-                btnLogout.setFont(UiConfig.FONT_H2);
+        btnLogout.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btnLogout.setBackground(UiConfig.DANGER);
+                btnLogout.setForeground(Color.WHITE);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btnLogout.setBackground(UiConfig.BG_CARD);
                 btnLogout.setForeground(UiConfig.DANGER);
             }
-        } catch (Exception e) {
-            btnLogout.setText("🚪");
-            btnLogout.setFont(UiConfig.FONT_H2);
-        }
+        });
 
         btnLogout.addActionListener(e -> onLogout());
 
-        // DODANO: Uporabniški podatki
         JPanel userTextPanel = new JPanel();
         userTextPanel.setOpaque(false);
         userTextPanel.setLayout(new BoxLayout(userTextPanel, BoxLayout.Y_AXIS));
         userTextPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
 
-        lblUsername = new JLabel(currentUsername);
-        lblUsername.setFont(UiConfig.FONT_H2);
-        lblUsername.setForeground(UiConfig.TEXT);
+        lblUsername = new JLabel(currentUsername.toUpperCase());
+        lblUsername.setFont(UiConfig.FONT_H2_BOLD);
+        lblUsername.setForeground(UiConfig.TEXT_BOLD);
         lblUsername.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         lblUserEmail = new JLabel(currentUserEmail);
-        lblUserEmail.setFont(UiConfig.FONT_SMALL);
-        lblUserEmail.setForeground(UiConfig.TEXT_MUTED);
+        lblUserEmail.setFont(UiConfig.FONT_SMALL_BOLD);
+        lblUserEmail.setForeground(UiConfig.PRIMARY);
         lblUserEmail.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         userTextPanel.add(lblUsername);
-        userTextPanel.add(Box.createVerticalStrut(2));
+        userTextPanel.add(Box.createVerticalStrut(UiConfig.GAP_SMALL));
         userTextPanel.add(lblUserEmail);
 
         userInfoPanel.add(userTextPanel);
-        userInfoPanel.add(Box.createHorizontalStrut(15));
+        userInfoPanel.add(Box.createHorizontalStrut(UiConfig.GAP_LARGE));
         userInfoPanel.add(btnLogout);
 
-        // header (dashboard) - premaknjeno desno
         headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
-        headerPanel.setBorder(new EmptyBorder(0, 0, 10, 0));
+        headerPanel.setBorder(new EmptyBorder(0, 0, UiConfig.PAD, 0));
 
         JPanel dashboardPanel = new JPanel();
         dashboardPanel.setOpaque(false);
         dashboardPanel.setLayout(new BoxLayout(dashboardPanel, BoxLayout.Y_AXIS));
 
         lblDashboard = new JLabel("DASHBOARD");
-        lblDashboard.setFont(UiConfig.FONT_H1);
-        lblDashboard.setForeground(UiConfig.TEXT_MUTED);
+        lblDashboard.setFont(UiConfig.FONT_H1_BOLD);
+        lblDashboard.setForeground(UiConfig.TEXT_ACCENT);
         lblDashboard.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         dashboardPanel.add(lblDashboard);
 
-        headerPanel.add(userInfoPanel, BorderLayout.WEST); // user info levo
-        headerPanel.add(dashboardPanel, BorderLayout.CENTER); // dashboard v sredini
+        headerPanel.add(userInfoPanel, BorderLayout.WEST);
+        headerPanel.add(dashboardPanel, BorderLayout.CENTER);
 
-        // top bar
         topPanel = new JPanel(new BorderLayout());
         topPanel.setOpaque(true);
         topPanel.setBackground(UiConfig.BG_BAR);
         topPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(1, 0, 1, 0, UiConfig.BORDER),
-                new EmptyBorder(8, 15, 8, 15)
+                BorderFactory.createMatteBorder(UiConfig.BORDER_WIDTH, 0, UiConfig.BORDER_WIDTH, 0, UiConfig.BORDER_BOLD),
+                new EmptyBorder(UiConfig.PAD_INNER, UiConfig.PAD_LARGE, UiConfig.PAD_INNER, UiConfig.PAD_LARGE)
         ));
 
-        titleLabel = new JLabel("Seznam zaposlenih");
-        titleLabel.setFont(UiConfig.FONT_H1);
-        titleLabel.setForeground(UiConfig.TEXT);
+        titleLabel = new JLabel("SEZNAM ZAPOSLENIH");
+        titleLabel.setFont(UiConfig.FONT_H2_BOLD);
+        titleLabel.setForeground(UiConfig.TEXT_BOLD);
 
         buttonBar = buildButtonBar();
         topPanel.add(titleLabel, BorderLayout.WEST);
         topPanel.add(buttonBar, BorderLayout.EAST);
 
-        // scrollpane
-        tableScroll.setBorder(BorderFactory.createLineBorder(UiConfig.BORDER));
+        employeeTable.setRowHeight(UiConfig.TABLE_ROW_H);
+        tableScroll = new JScrollPane(employeeTable);
+        tableScroll.setBorder(BorderFactory.createLineBorder(UiConfig.BORDER_BOLD, UiConfig.BORDER_WIDTH));
+        tableScroll.getViewport().setBackground(UiConfig.TABLE_BG);
 
-        // north wrapper
+        JLabel zoomHint = new JLabel("💡 CTRL + SCROLL za spreminjanje velikosti vrstic");
+        zoomHint.setFont(UiConfig.FONT_SMALL);
+        zoomHint.setForeground(UiConfig.TEXT_MUTED);
+        zoomHint.setBorder(new EmptyBorder(UiConfig.PAD_INNER_SMALL, UiConfig.PAD, 0, UiConfig.PAD));
+        zoomHint.setAlignmentX(Component.RIGHT_ALIGNMENT);
+
+        JPanel southPanel = new JPanel();
+        southPanel.setOpaque(false);
+        southPanel.setLayout(new BoxLayout(southPanel, BoxLayout.Y_AXIS));
+        southPanel.add(zoomHint);
+
         JPanel north = new JPanel();
         north.setOpaque(false);
         north.setLayout(new BoxLayout(north, BoxLayout.Y_AXIS));
         north.add(headerPanel);
-        north.add(Box.createVerticalStrut(5));
+        north.add(Box.createVerticalStrut(UiConfig.PAD));
         north.add(topPanel);
 
         mainPanel.add(north, BorderLayout.NORTH);
         mainPanel.add(tableScroll, BorderLayout.CENTER);
-
-        applyUi(); // initial style apply
+        mainPanel.add(southPanel, BorderLayout.SOUTH);
 
         return mainPanel;
     }
 
     private JPanel buildButtonBar() {
-        JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, UiConfig.GAP, 0));
         p.setOpaque(false);
 
-        btnRefresh = button("⟳", UiConfig.BG_BAR, UiConfig.TEXT_MUTED,
-                UiConfig.BTN_H, UiConfig.BTN_H, this::refreshTable);
+        btnRefresh = createButton("⟳ OSVEŽI", UiConfig.BG_BAR, UiConfig.TEXT_ACCENT,
+                UiConfig.BTN_W, UiConfig.BTN_H, this::refreshTable);
 
-        btnAdd = button("+ Dodaj zaposlenega", UiConfig.PRIMARY, UiConfig.PRIMARY_TEXT,
-                UiConfig.BTN_W, UiConfig.BTN_H, this::onAdd);
+        btnAdd = createButton("+ DODAJ ZAPOSLENEGA", UiConfig.PRIMARY, UiConfig.PRIMARY_TEXT,
+                UiConfig.BTN_W_LARGE, UiConfig.BTN_H, this::onAdd);
 
-        btnEdit = button("Uredi", UiConfig.SUCCESS, UiConfig.PRIMARY_TEXT,
+        btnEdit = createButton("✎ UREDI", UiConfig.SUCCESS, UiConfig.PRIMARY_TEXT,
                 UiConfig.BTN_W, UiConfig.BTN_H, this::onEdit);
 
-        btnDelete = button("X Izbriši", UiConfig.DANGER, UiConfig.PRIMARY_TEXT,
+        btnDelete = createButton("🗑 IZBRŠI", UiConfig.DANGER, UiConfig.PRIMARY_TEXT,
                 UiConfig.BTN_W, UiConfig.BTN_H, this::onDelete);
 
         p.add(btnRefresh);
@@ -203,24 +268,37 @@ public class MainWindow extends JFrame {
         return p;
     }
 
-    private JButton button(String text, Color bg, Color fg, int w, int h, Runnable action) {
+    private JButton createButton(String text, Color bg, Color fg, int w, int h, Runnable action) {
         JButton b = new JButton(text);
         b.addActionListener(e -> action.run());
-        b.setOpaque(true);
-        b.setBorderPainted(false);
-        b.setFocusPainted(false);
-        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        b.setPreferredSize(new Dimension(w, h));
-
-        b.setFont(UiConfig.FONT_BASE);
+        b.setFont(UiConfig.FONT_BASE_BOLD);
         b.setBackground(bg);
         b.setForeground(fg);
+        b.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(bg.darker(), UiConfig.BORDER_WIDTH),
+                new EmptyBorder(UiConfig.PAD_INNER, UiConfig.PAD_INNER, UiConfig.PAD_INNER, UiConfig.PAD_INNER)
+        ));
+        b.setFocusPainted(false);
+        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        b.setOpaque(true);
+        b.setBorderPainted(true);
+        b.setMinimumSize(new Dimension(w, h));
+        b.setPreferredSize(new Dimension(w, h));
+
+        b.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                b.setBackground(bg.darker());
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                b.setBackground(bg);
+            }
+        });
 
         return b;
     }
 
     private JTable createEmployeeTable() {
-        String[] columns = {"ID", "Ime", "Priimek", "Delovno mesto", "Oddelek", "Plača", "Datum zaposlitve"};
+        String[] columns = {"ID", "IME", "PRIIMEK", "DELOVNO MESTO", "ODDELEK", "PLAČA", "DATUM ZAPOSLITVE"};
 
         DefaultTableModel model = new DefaultTableModel(columns, 0) {
             @Override public boolean isCellEditable(int row, int column) { return false; }
@@ -229,16 +307,25 @@ public class MainWindow extends JFrame {
         JTable t = new JTable(model);
 
         t.setRowHeight(UiConfig.TABLE_ROW_H);
-        t.setFont(UiConfig.FONT_BASE);
-        t.setBackground(UiConfig.BG_CARD);
+        t.setFont(UiConfig.FONT_BASE_BOLD);
+        t.setBackground(UiConfig.TABLE_BG);
         t.setForeground(UiConfig.TEXT);
         t.setGridColor(UiConfig.TABLE_GRID);
+        t.setShowGrid(true);
+        t.setIntercellSpacing(new Dimension(1, 1));
+        t.setSelectionBackground(UiConfig.TABLE_ROW_SELECTED);
+        t.setSelectionForeground(UiConfig.TEXT_BOLD);
+        t.setRowMargin(2);
 
         JTableHeader header = t.getTableHeader();
         header.setReorderingAllowed(false);
-        header.setBackground(UiConfig.TABLE_HEADER_BG);
+        header.setBackground(UiConfig.TABLE_HEADER_BG_DARK);
         header.setForeground(UiConfig.TABLE_HEADER_FG);
-        header.setFont(UiConfig.FONT_H2);
+        header.setFont(UiConfig.FONT_H3);
+        header.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, UiConfig.BORDER_WIDTH_THICK, 0, UiConfig.BORDER_ACCENT),
+                new EmptyBorder(UiConfig.PAD_INNER, UiConfig.PAD_INNER, UiConfig.PAD_INNER, UiConfig.PAD_INNER)
+        ));
 
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
         sorter.setComparator(5, Comparator.comparingDouble(v -> {
@@ -256,95 +343,17 @@ public class MainWindow extends JFrame {
         return t;
     }
 
-    private void applyUi() {
-        getContentPane().setBackground(UiConfig.BG_APP);
-
-        if (mainPanel != null) {
-            mainPanel.setBackground(UiConfig.BG_APP);
-            mainPanel.setBorder(BorderFactory.createEmptyBorder(
-                    UiConfig.PAD, UiConfig.PAD, UiConfig.PAD, UiConfig.PAD
-            ));
-        }
-
-        if (lblDashboard != null) {
-            lblDashboard.setFont(UiConfig.FONT_H1);
-            lblDashboard.setForeground(UiConfig.TEXT_MUTED);
-        }
-
-        if (topPanel != null) {
-            topPanel.setBackground(UiConfig.BG_BAR);
-        }
-        if (titleLabel != null) {
-            titleLabel.setFont(UiConfig.FONT_H1);
-            titleLabel.setForeground(UiConfig.TEXT);
-        }
-
-        if (lblUsername != null) {
-            lblUsername.setFont(UiConfig.FONT_H2);
-            lblUsername.setForeground(UiConfig.TEXT);
-        }
-        if (lblUserEmail != null) {
-            lblUserEmail.setFont(UiConfig.FONT_SMALL);
-            lblUserEmail.setForeground(UiConfig.TEXT_MUTED);
-        }
-
-        restyleButton(btnRefresh, UiConfig.BG_BAR, UiConfig.TEXT_MUTED, UiConfig.BTN_H, UiConfig.BTN_H);
-        restyleButton(btnAdd, UiConfig.PRIMARY, UiConfig.PRIMARY_TEXT, UiConfig.BTN_W, UiConfig.BTN_H);
-        restyleButton(btnEdit, UiConfig.SUCCESS, UiConfig.PRIMARY_TEXT, UiConfig.BTN_W, UiConfig.BTN_H);
-        restyleButton(btnDelete, UiConfig.DANGER, UiConfig.PRIMARY_TEXT, UiConfig.BTN_W, UiConfig.BTN_H);
-
-        if (btnLogout != null) {
-            btnLogout.setFont(UiConfig.FONT_H2);
-            btnLogout.setForeground(UiConfig.DANGER);
-            btnLogout.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        }
-
-        if (tableScroll != null) {
-            tableScroll.getViewport().setBackground(UiConfig.BG_CARD);
-            tableScroll.setBorder(BorderFactory.createLineBorder(UiConfig.BORDER));
-        }
-
-        if (employeeTable != null) {
-            employeeTable.setRowHeight(UiConfig.TABLE_ROW_H);
-            employeeTable.setFont(UiConfig.FONT_BASE);
-            employeeTable.setBackground(UiConfig.BG_CARD);
-            employeeTable.setForeground(UiConfig.TEXT);
-            employeeTable.setGridColor(UiConfig.TABLE_GRID);
-            employeeTable.setBackground(UiConfig.TABLE_BG);
-
-            JTableHeader th = employeeTable.getTableHeader();
-            if (th != null) {
-                th.setBackground(UiConfig.TABLE_HEADER_BG);
-                th.setForeground(UiConfig.TABLE_HEADER_FG);
-                th.setFont(UiConfig.FONT_H2);
-                th.setReorderingAllowed(false);
-            }
-        }
-    }
-
-    private void restyleButton(JButton b, Color bg, Color fg, int w, int h) {
-        if (b == null) return;
-        b.setFont(UiConfig.FONT_BASE);
-        b.setBackground(bg);
-        b.setForeground(fg);
-        b.setPreferredSize(new Dimension(w, h));
-        b.setOpaque(true);
-        b.setBorderPainted(false);
-        b.setFocusPainted(false);
-        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    }
-
     private void onLogout() {
         int confirm = JOptionPane.showConfirmDialog(this,
                 "Ali ste prepričani, da se želite odjaviti?",
-                "Potrdi odjavo",
+                "POTRDI ODJAVO",
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.QUESTION_MESSAGE);
 
         if (confirm == JOptionPane.YES_OPTION) {
             this.dispose();
-            new LoginWindow(controller);
-            //.exit(0); // Za zdaj samo zapremo
+            LoginWindow loginWindow = new LoginWindow(controller);
+            loginWindow.setVisible(true);
         }
     }
 
@@ -355,7 +364,6 @@ public class MainWindow extends JFrame {
             }
 
             controller.refreshApp();
-            applyUi();
             controller.loadEmployees((DefaultTableModel) employeeTable.getModel());
 
             SwingUtilities.updateComponentTreeUI(this);
@@ -363,7 +371,7 @@ public class MainWindow extends JFrame {
             repaint();
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(), "Napaka", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, e.getMessage(), "NAPAKA", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -376,7 +384,7 @@ public class MainWindow extends JFrame {
     private void onEdit() {
         int viewRow = employeeTable.getSelectedRow();
         if (viewRow == -1) {
-            JOptionPane.showMessageDialog(this, "Izberi zaposlenega!");
+            JOptionPane.showMessageDialog(this, "IZBERI ZAPOSLENEGA!");
             return;
         }
 
@@ -391,21 +399,21 @@ public class MainWindow extends JFrame {
     private void onDelete() {
         int viewRow = employeeTable.getSelectedRow();
         if (viewRow == -1) {
-            JOptionPane.showMessageDialog(this, "Izberi zaposlenega!");
+            JOptionPane.showMessageDialog(this, "IZBERI ZAPOSLENEGA!");
             return;
         }
 
         int row = employeeTable.convertRowIndexToModel(viewRow);
         int employeeId = Integer.parseInt(employeeTable.getValueAt(row, 0).toString());
 
-        int confirm = JOptionPane.showConfirmDialog(this, "Izbrišem?", "Potrdi", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "IZBRŠEM IZBIRANEGA ZAPOSLENEGA?", "POTRDI BRISANJE", JOptionPane.YES_NO_OPTION);
         if (confirm != JOptionPane.YES_OPTION) return;
 
         try {
             controller.deleteEmployee(employeeId);
             refreshTable();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, e.getMessage(), "Napaka", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, e.getMessage(), "NAPAKA", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
