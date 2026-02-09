@@ -81,23 +81,43 @@ public class AddEmployee extends JDialog {
     private void loadCombos() {
         ResultSet rs = null;
         try {
+            // 1. Naloži delovna mesta
             rs = controller.getDelovnaMesta();
             while (rs.next()) {
                 cbDelovnoMesto.addItem(new Item(rs.getInt("id"), rs.getString("naziv")));
             }
             closeQuietly(rs);
 
-            rs = controller.getOddelki();
+            // 2. Dodaj listener za delovna mesta
+            cbDelovnoMesto.addActionListener(e -> {
+                Item selected = (Item) cbDelovnoMesto.getSelectedItem();
+                if (selected != null) {
+                    ResultSet rs2 = null;  // LOKALNA spremenljivka za lambda
+                    try {
+                        cbOddelek.removeAllItems();
+                        rs2 = controller.getOddelki(selected.id);
+                        while (rs2.next()) {
+                            cbOddelek.addItem(new Item(rs2.getInt("id"), rs2.getString("naziv")));
+                        }
+                    } catch (Exception ex) {
+                        showError(ex);
+                    } finally {
+                        closeQuietly(rs2);
+                    }
+                }
+            });
+
+            // 3. Naloži kraje - POZOR: stolpec je "ime", ne "naziv"!
+            rs = controller.getKraji();
             while (rs.next()) {
-                cbOddelek.addItem(new Item(rs.getInt("id"), rs.getString("naziv")));
+                cbKraj.addItem(new Item(rs.getInt("id"), rs.getString("ime")));  // SPREMENI TU!
             }
             closeQuietly(rs);
 
-            rs = controller.getKraji();
-            while (rs.next()) {
-                cbKraj.addItem(new Item(rs.getInt("id"), rs.getString("naziv")));
+            // 4. Izberi prvo delovno mesto, da se naložijo oddelki
+            if (cbDelovnoMesto.getItemCount() > 0) {
+                cbDelovnoMesto.setSelectedIndex(0);
             }
-            closeQuietly(rs);
 
         } catch (Exception e) {
             closeQuietly(rs);

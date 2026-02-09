@@ -282,10 +282,11 @@ public class AppController {
         return ps.executeQuery();
     }
 
-    public ResultSet getOddelki() throws Exception {
+    public ResultSet getOddelki(int delovnoMestoId) throws Exception {
         PreparedStatement ps = db.getConnection().prepareStatement(
-                "SELECT * FROM get_oddelki()"
+                "SELECT * FROM get_oddelki(?)"
         );
+        ps.setInt(1, delovnoMestoId);
         return ps.executeQuery();
     }
 
