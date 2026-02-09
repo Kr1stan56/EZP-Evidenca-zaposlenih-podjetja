@@ -8,9 +8,6 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.*;
-import java.util.Map;
-import java.util.HashMap;
-
 
 public class AppController {
 
@@ -39,11 +36,8 @@ public class AppController {
         }
     }
 
-
-
     private void loadUiConfig() throws Exception {
-
-        // reset (da se vidi, če kaj manjka)
+        // reset
         UiConfig.FONT_BASE = null;
         UiConfig.FONT_H1 = null;
         UiConfig.FONT_H2 = null;
@@ -60,20 +54,17 @@ public class AppController {
         UiConfig.SUCCESS = null;
         UiConfig.DANGER = null;
 
-        // če teh polj še nimaš v UiConfig, jih dodaj (public static Color ...)
         UiConfig.PRIMARY_TEXT = null;
         UiConfig.TABLE_HEADER_BG = null;
         UiConfig.TABLE_HEADER_FG = null;
         UiConfig.TABLE_GRID = null;
 
-        // int-e lahko resetiraš na -1, da strogo preverjaš
         UiConfig.PAD = -1;
         UiConfig.PAD_INNER = -1;
         UiConfig.BTN_W = -1;
         UiConfig.BTN_H = -1;
         UiConfig.TABLE_ROW_H = -1;
 
-        // icon gumbi (imaš v bazi)
         UiConfig.BTN_ICON_W = -1;
         UiConfig.BTN_ICON_H = -1;
 
@@ -118,8 +109,6 @@ public class AppController {
                         case "ui.color.table.header.fg" -> UiConfig.TABLE_HEADER_FG = Color.decode(v);
                         case "ui.color.table.grid"      -> UiConfig.TABLE_GRID = Color.decode(v);
                         case "ui.color.table.bg" -> UiConfig.TABLE_BG = Color.decode(v);
-
-
 
                         case "ui.pad.outer" -> UiConfig.PAD = Integer.parseInt(v);
                         case "ui.pad.inner" -> UiConfig.PAD_INNER = Integer.parseInt(v);
@@ -173,12 +162,11 @@ public class AppController {
         }
     }
 
-
-
     private void showLoginWindow() {
-        loginWindow = new LoginWindow();
-        loginWindow.setVisible(true);
 
+
+        loginWindow = new LoginWindow(this);
+        loginWindow.setVisible(true);
         loginWindow.getBtnLogin().addActionListener(e -> checkLogin());
     }
 
@@ -192,12 +180,21 @@ public class AppController {
         }
 
         try {
-            if (authService.login(username, password)) {
+            String[] userData = authService.login(username, password);
+
+            if (userData != null) {
+                String userEmail = userData[1];
+
                 loginWindow.dispose();
                 loadUiConfig();
-                new MainWindow(this);
+                new MainWindow(this, userEmail, username);
             } else {
-                JOptionPane.showMessageDialog(loginWindow, "Napačno uporabniško ime ali geslo");
+                JOptionPane.showMessageDialog(loginWindow,
+                        "Napačno uporabniško ime ali geslo.\n\n" +
+                                "Prosimo obrnite se na support:\n" +
+                                "blaz.kristan.bk@gmail.com",
+                        "Napaka pri prijavi",
+                        JOptionPane.ERROR_MESSAGE);
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(loginWindow, "Napaka: " + e.getMessage());
@@ -230,8 +227,6 @@ public class AppController {
         rs.close();
         ps.close();
     }
-
-
 
     public int addEmployee(
             String ime,
@@ -273,7 +268,9 @@ public class AppController {
         return newId;
     }
 
-
+    public boolean registerAdmin(String username, String password, String email) throws Exception {
+        return authService.register(username, password, email);
+    }
 
     public ResultSet getDelovnaMesta() throws Exception {
         PreparedStatement ps = db.getConnection().prepareStatement(
@@ -296,8 +293,6 @@ public class AppController {
         );
         return ps.executeQuery();
     }
-
-
 
     public ResultSet getEmployeeById(int employeeId) throws Exception {
         PreparedStatement ps = db.getConnection().prepareStatement(
@@ -338,6 +333,7 @@ public class AppController {
         ps.execute();
         ps.close();
     }
+
     public void deleteEmployee(int employeeId) throws Exception {
         try (PreparedStatement ps = db.getConnection().prepareStatement(
                 "SELECT delete_employee(?)"
@@ -346,11 +342,8 @@ public class AppController {
             ps.execute();
         }
     }
+
     public void refreshApp() throws Exception {
         loadUiConfig();
     }
-
-
-
-
 }
