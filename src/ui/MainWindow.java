@@ -16,14 +16,17 @@ public class MainWindow extends JFrame {
 
     private final JTable employeeTable;
 
-    // UI references (da jih lahko applyUi() restyla po refreshu)
+    // UI references
     private JPanel mainPanel;
     private JPanel headerPanel;
     private JPanel topPanel;
     private JPanel buttonBar;
+    private JPanel userInfoPanel; // DODANO: panel za uporabniške informacije
 
     private JLabel lblDashboard;
     private JLabel titleLabel;
+    private JLabel lblUserEmail; // DODANO: email uporabnika
+    private JLabel lblUsername;  // DODANO: username uporabnika
 
     private JScrollPane tableScroll;
 
@@ -31,20 +34,24 @@ public class MainWindow extends JFrame {
     private JButton btnAdd;
     private JButton btnEdit;
     private JButton btnDelete;
+    private JButton btnLogout; // DODANO: logout gumb
 
-    public MainWindow(AppController controller) {
+    // DODANO: spremenljivki za uporabniške podatke
+    private String currentUserEmail;
+    private String currentUsername;
+
+    // SPREMENJENO: samo en konstruktor, ki sprejema vse podatke
+    public MainWindow(AppController controller, String email, String username) {
         this.controller = controller;
+        this.currentUserEmail = email;
+        this.currentUsername = username;
 
         setTitle("EZP – Evidenca zaposlenih podjetja");
-
-        // Če hočeš 100% DB: premakni w/h v DB ključe in beri v UiConfig
-        setSize(1000, 600);
-
+        setSize(1100, 650); // POVEČANA ŠIRINA za user info
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         employeeTable = createEmployeeTable();
-
         setContentPane(buildUi());
         refreshTable();
 
@@ -57,20 +64,100 @@ public class MainWindow extends JFrame {
         topPanel = new JPanel(new BorderLayout());
         tableScroll = new JScrollPane(employeeTable);
 
-        // header (dashboard)
+        // DODANO: User info panel (zgoraj levo)
+        userInfoPanel = new JPanel();
+        userInfoPanel.setOpaque(false);
+        userInfoPanel.setLayout(new BoxLayout(userInfoPanel, BoxLayout.X_AXIS));
+        userInfoPanel.setBorder(new EmptyBorder(5, 10, 5, 20));
+
+        // DODANO: Logout gumb z ikono
+        btnLogout = new JButton();
+        btnLogout.setToolTipText("Odjava");
+        btnLogout.setPreferredSize(new Dimension(50, 50));
+        btnLogout.setMinimumSize(new Dimension(50, 50));
+        btnLogout.setMaximumSize(new Dimension(50, 50));
+        btnLogout.setBorder(BorderFactory.createEmptyBorder());
+        btnLogout.setContentAreaFilled(false);
+        btnLogout.setFocusPainted(false);
+        btnLogout.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        // Poskusite naložiti ikono
+        try {
+            ImageIcon logoutIcon = new ImageIcon("leave.png");
+            if (logoutIcon.getImageLoadStatus() == MediaTracker.COMPLETE) {
+                Image img = logoutIcon.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
+                btnLogout.setIcon(new ImageIcon(img));
+            } else {
+                // Če ikona ne obstaja, uporabite text
+                btnLogout.setText("X");
+                btnLogout.setFont(UiConfig.FONT_H2);
+                btnLogout.setForeground(UiConfig.DANGER);
+            }
+        } catch (Exception e) {
+            btnLogout.setText("🚪");
+            btnLogout.setFont(UiConfig.FONT_H2);
+        }
+
+        btnLogout.addActionListener(e -> onLogout());
+
+        // DODANO: Uporabniški podatki
+        JPanel userTextPanel = new JPanel();
+        userTextPanel.setOpaque(false);
+        userTextPanel.setLayout(new BoxLayout(userTextPanel, BoxLayout.Y_AXIS));
+        userTextPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
+
+        lblUsername = new JLabel(currentUsername);
+        lblUsername.setFont(UiConfig.FONT_H2);
+        lblUsername.setForeground(UiConfig.TEXT);
+        lblUsername.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        lblUserEmail = new JLabel(currentUserEmail);
+        lblUserEmail.setFont(UiConfig.FONT_SMALL);
+        lblUserEmail.setForeground(UiConfig.TEXT_MUTED);
+        lblUserEmail.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        userTextPanel.add(lblUsername);
+        userTextPanel.add(Box.createVerticalStrut(2));
+        userTextPanel.add(lblUserEmail);
+
+        userInfoPanel.add(userTextPanel);
+        userInfoPanel.add(Box.createHorizontalStrut(15));
+        userInfoPanel.add(btnLogout);
+
+        // header (dashboard) - premaknjeno desno
+        headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
-        headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
-        headerPanel.setBorder(new EmptyBorder(0, 4, 10, 0));
+        headerPanel.setBorder(new EmptyBorder(0, 0, 10, 0));
+
+        JPanel dashboardPanel = new JPanel();
+        dashboardPanel.setOpaque(false);
+        dashboardPanel.setLayout(new BoxLayout(dashboardPanel, BoxLayout.Y_AXIS));
 
         lblDashboard = new JLabel("DASHBOARD");
+        lblDashboard.setFont(UiConfig.FONT_H1);
+        lblDashboard.setForeground(UiConfig.TEXT_MUTED);
         lblDashboard.setAlignmentX(Component.LEFT_ALIGNMENT);
-        headerPanel.add(lblDashboard);
+
+        dashboardPanel.add(lblDashboard);
+
+        headerPanel.add(userInfoPanel, BorderLayout.WEST); // user info levo
+        headerPanel.add(dashboardPanel, BorderLayout.CENTER); // dashboard v sredini
 
         // top bar
+        topPanel = new JPanel(new BorderLayout());
+        topPanel.setOpaque(true);
+        topPanel.setBackground(UiConfig.BG_BAR);
+        topPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 1, 0, UiConfig.BORDER),
+                new EmptyBorder(8, 15, 8, 15)
+        ));
+
         titleLabel = new JLabel("Seznam zaposlenih");
-        topPanel.add(titleLabel, BorderLayout.WEST);
+        titleLabel.setFont(UiConfig.FONT_H1);
+        titleLabel.setForeground(UiConfig.TEXT);
 
         buttonBar = buildButtonBar();
+        topPanel.add(titleLabel, BorderLayout.WEST);
         topPanel.add(buttonBar, BorderLayout.EAST);
 
         // scrollpane
@@ -81,6 +168,7 @@ public class MainWindow extends JFrame {
         north.setOpaque(false);
         north.setLayout(new BoxLayout(north, BoxLayout.Y_AXIS));
         north.add(headerPanel);
+        north.add(Box.createVerticalStrut(5));
         north.add(topPanel);
 
         mainPanel.add(north, BorderLayout.NORTH);
@@ -124,7 +212,6 @@ public class MainWindow extends JFrame {
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         b.setPreferredSize(new Dimension(w, h));
 
-        // style (bo še enkrat nastavljen v applyUi)
         b.setFont(UiConfig.FONT_BASE);
         b.setBackground(bg);
         b.setForeground(fg);
@@ -141,7 +228,6 @@ public class MainWindow extends JFrame {
 
         JTable t = new JTable(model);
 
-        // table styling (bo še enkrat nastavljen v applyUi)
         t.setRowHeight(UiConfig.TABLE_ROW_H);
         t.setFont(UiConfig.FONT_BASE);
         t.setBackground(UiConfig.BG_CARD);
@@ -154,7 +240,6 @@ public class MainWindow extends JFrame {
         header.setForeground(UiConfig.TABLE_HEADER_FG);
         header.setFont(UiConfig.FONT_H2);
 
-        // sorter (plača)
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
         sorter.setComparator(5, Comparator.comparingDouble(v -> {
             if (v == null) return 0.0;
@@ -172,7 +257,6 @@ public class MainWindow extends JFrame {
     }
 
     private void applyUi() {
-        // root
         getContentPane().setBackground(UiConfig.BG_APP);
 
         if (mainPanel != null) {
@@ -182,20 +266,27 @@ public class MainWindow extends JFrame {
             ));
         }
 
-
         if (lblDashboard != null) {
             lblDashboard.setFont(UiConfig.FONT_H1);
             lblDashboard.setForeground(UiConfig.TEXT_MUTED);
         }
 
-
         if (topPanel != null) {
             topPanel.setBackground(UiConfig.BG_BAR);
-            topPanel.setBorder(BorderFactory.createLineBorder(UiConfig.BORDER));
         }
         if (titleLabel != null) {
             titleLabel.setFont(UiConfig.FONT_H1);
             titleLabel.setForeground(UiConfig.TEXT);
+        }
+
+        // DODANO: user info styling
+        if (lblUsername != null) {
+            lblUsername.setFont(UiConfig.FONT_H2);
+            lblUsername.setForeground(UiConfig.TEXT);
+        }
+        if (lblUserEmail != null) {
+            lblUserEmail.setFont(UiConfig.FONT_SMALL);
+            lblUserEmail.setForeground(UiConfig.TEXT_MUTED);
         }
 
         restyleButton(btnRefresh, UiConfig.BG_BAR, UiConfig.TEXT_MUTED, UiConfig.BTN_H, UiConfig.BTN_H);
@@ -203,13 +294,18 @@ public class MainWindow extends JFrame {
         restyleButton(btnEdit, UiConfig.SUCCESS, UiConfig.PRIMARY_TEXT, UiConfig.BTN_W, UiConfig.BTN_H);
         restyleButton(btnDelete, UiConfig.DANGER, UiConfig.PRIMARY_TEXT, UiConfig.BTN_W, UiConfig.BTN_H);
 
-        //
+        // DODANO: logout button styling
+        if (btnLogout != null) {
+            btnLogout.setFont(UiConfig.FONT_H2);
+            btnLogout.setForeground(UiConfig.DANGER);
+            btnLogout.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        }
+
         if (tableScroll != null) {
             tableScroll.getViewport().setBackground(UiConfig.BG_CARD);
             tableScroll.setBorder(BorderFactory.createLineBorder(UiConfig.BORDER));
         }
 
-        // table
         if (employeeTable != null) {
             employeeTable.setRowHeight(UiConfig.TABLE_ROW_H);
             employeeTable.setFont(UiConfig.FONT_BASE);
@@ -240,19 +336,30 @@ public class MainWindow extends JFrame {
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
+    // DODANO: logout metoda
+    private void onLogout() {
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Ali ste prepričani, da se želite odjaviti?",
+                "Potrdi odjavo",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            this.dispose();
+            // Tukaj lahko dodate kodo za vračanje na login okno
+            // new LoginWindow(controller);
+            System.exit(0); // Za zdaj samo zapremo
+        }
+    }
+
     private void refreshTable() {
         try {
             if (employeeTable.getRowSorter() != null) {
                 employeeTable.getRowSorter().setSortKeys(null);
             }
 
-            // 1) reload UiConfig iz baze
             controller.refreshApp();
-
-            // 2) apply novih nastavitev na komponente
             applyUi();
-
-            // 3) reload data
             controller.loadEmployees((DefaultTableModel) employeeTable.getModel());
 
             SwingUtilities.updateComponentTreeUI(this);

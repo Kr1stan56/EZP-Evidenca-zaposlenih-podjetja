@@ -3,24 +3,37 @@ package ui;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
+import controller.AppController;
 
 public class LoginWindow extends JFrame {
 
     private JTextField txtUsername;
     private JPasswordField txtPassword;
     private JButton btnLogin;
+    private JButton btnRegister;
+    private AppController controller;
 
-
+    // DODAJTE KONSTRUKTOR BREZ PARAMETRA
     public LoginWindow() {
+        this(null);
+    }
+
+    public LoginWindow(AppController controller) {
+        this.controller = controller;
+
         setTitle("EZP – Prijava");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-        setSize(Math.max(520, screen.width / 3), Math.max(380, screen.height / 3));
+        setSize(Math.max(520, screen.width / 3), Math.max(400, screen.height / 3));
         setLocationRelativeTo(null);
 
         initUI();
         setVisible(true);
+    }
+
+    public void setController(AppController controller) {
+        this.controller = controller;
     }
 
     private void initUI() {
@@ -87,6 +100,16 @@ public class LoginWindow extends JFrame {
         btnLogin.setOpaque(true);
         btnLogin.setBorderPainted(false);
 
+        btnRegister = new JButton("Registracija");
+        btnRegister.setFont(UiConfig.FONT_SMALL);
+        btnRegister.setBackground(UiConfig.BG_CARD);
+        btnRegister.setForeground(UiConfig.PRIMARY);
+        btnRegister.setFocusPainted(false);
+        btnRegister.setBorder(new EmptyBorder(4, 8, 4, 8));
+        btnRegister.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btnRegister.setOpaque(true);
+        btnRegister.setBorderPainted(false);
+
         getRootPane().setDefaultButton(btnLogin);
 
         int r = 0;
@@ -110,12 +133,19 @@ public class LoginWindow extends JFrame {
         gbc.weightx = 0;
         card.add(btnLogin, gbc);
 
+        gbc.gridy = r++;
+        gbc.insets = new Insets(5, 0, 0, 0);
+        gbc.anchor = GridBagConstraints.CENTER;
+        card.add(btnRegister, gbc);
+
         host.add(card);
 
         root.add(header, BorderLayout.NORTH);
         root.add(host, BorderLayout.CENTER);
 
         setContentPane(root);
+
+        btnRegister.addActionListener(e -> onRegister());
     }
 
     private JLabel labelMuted(String text) {
@@ -125,7 +155,31 @@ public class LoginWindow extends JFrame {
         return l;
     }
 
+    private void onRegister() {
+        if (controller == null) {
+            JOptionPane.showMessageDialog(this,
+                    "Napaka: Controller ni nastavljen!",
+                    "Napaka",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        RegisterWindow registerDialog = new RegisterWindow(this, controller);
+        registerDialog.setVisible(true);
+
+        if (registerDialog.isRegistrationSuccess()) {
+            txtUsername.setText(registerDialog.getUsername());
+            txtPassword.setText(registerDialog.getPassword());
+
+            JOptionPane.showMessageDialog(this,
+                    "Registracija uspešna!\nSedaj se lahko prijavite z vašimi podatki.",
+                    "Uspeh",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
     public JTextField getTxtUsername() { return txtUsername; }
     public JPasswordField getTxtPassword() { return txtPassword; }
     public JButton getBtnLogin() { return btnLogin; }
+    public JButton getBtnRegister() { return btnRegister; }
 }
