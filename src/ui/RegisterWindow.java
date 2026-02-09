@@ -21,7 +21,7 @@ public class RegisterWindow extends JDialog {
         super(owner, "Registracija novega administratorja", true);
         this.controller = controller;
 
-        setSize(450, 420);
+        setSize(450, 500);
         setLocationRelativeTo(owner);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 

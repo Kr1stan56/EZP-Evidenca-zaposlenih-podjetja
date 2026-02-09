@@ -214,13 +214,13 @@ public class AppController {
                     rs.getInt(1),
                     rs.getString(2),
                     rs.getString(3),
-                    rs.getString(4),
-                    rs.getString(5),
-                    rs.getFloat(6),
-                    rs.getDate(7),
                     rs.getString(8),
                     rs.getString(9),
-                    rs.getString(10)
+                    rs.getFloat(6),
+                    rs.getDate(7),
+                    rs.getString(4),
+                    rs.getString(10),
+                    rs.getString(11)
             });
         }
 

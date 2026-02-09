@@ -279,7 +279,6 @@ public class MainWindow extends JFrame {
             titleLabel.setForeground(UiConfig.TEXT);
         }
 
-        // DODANO: user info styling
         if (lblUsername != null) {
             lblUsername.setFont(UiConfig.FONT_H2);
             lblUsername.setForeground(UiConfig.TEXT);
@@ -294,7 +293,6 @@ public class MainWindow extends JFrame {
         restyleButton(btnEdit, UiConfig.SUCCESS, UiConfig.PRIMARY_TEXT, UiConfig.BTN_W, UiConfig.BTN_H);
         restyleButton(btnDelete, UiConfig.DANGER, UiConfig.PRIMARY_TEXT, UiConfig.BTN_W, UiConfig.BTN_H);
 
-        // DODANO: logout button styling
         if (btnLogout != null) {
             btnLogout.setFont(UiConfig.FONT_H2);
             btnLogout.setForeground(UiConfig.DANGER);
@@ -336,7 +334,6 @@ public class MainWindow extends JFrame {
         b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
-    // DODANO: logout metoda
     private void onLogout() {
         int confirm = JOptionPane.showConfirmDialog(this,
                 "Ali ste prepričani, da se želite odjaviti?",
@@ -346,9 +343,8 @@ public class MainWindow extends JFrame {
 
         if (confirm == JOptionPane.YES_OPTION) {
             this.dispose();
-            // Tukaj lahko dodate kodo za vračanje na login okno
-            // new LoginWindow(controller);
-            System.exit(0); // Za zdaj samo zapremo
+            new LoginWindow(controller);
+            //.exit(0); // Za zdaj samo zapremo
         }
     }
 
