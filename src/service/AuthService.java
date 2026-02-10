@@ -11,7 +11,6 @@ public class AuthService {
         this.db = db;
     }
 
-    // SPREMENJENO: login metoda naj vrne tudi email
     public String[] login(String username, String password) throws Exception {
         String sql = "SELECT password, email FROM login_admin(?)";
 
