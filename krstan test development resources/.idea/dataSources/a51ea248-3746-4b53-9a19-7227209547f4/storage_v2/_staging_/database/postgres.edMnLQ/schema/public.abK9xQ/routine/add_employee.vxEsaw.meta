@@ -1,0 +1,2 @@
+#n:add_employee
+#i:(varchar,varchar,varchar,varchar,real,date,integer,integer)
