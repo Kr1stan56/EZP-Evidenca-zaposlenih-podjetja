@@ -1,0 +1,329 @@
+CREATE FUNCTION public.add_employee(p_ime text, p_priimek text, p_email text, p_telefon text, p_placa real, p_datum date, p_delovno_mesto_id integer, p_oddelek_id integer, p_kraj_id integer, p_izobrazba_id integer) RETURNS integer
+    LANGUAGE sql
+    AS $$
+  INSERT INTO public.zaposleni
+    (ime, priimek, email, telefon, placa, datum_zaposlitve,
+     delovno_mesto_id, oddelek_id, kraj_id, izobrazba_id)
+  VALUES
+    (p_ime, p_priimek, p_email, p_telefon, p_placa, p_datum,
+     p_delovno_mesto_id, p_oddelek_id, p_kraj_id, p_izobrazba_id)
+  RETURNING id;
+$$;
+CREATE FUNCTION public.add_employee(p_ime text, p_priimek text, p_email text, p_telefon text, p_placa real, p_datum date, p_delovno_mesto_id integer, p_oddelek_id integer, p_kraj_id integer, p_izobrazba_id integer) RETURNS integer
+    LANGUAGE sql
+    AS $$
+  INSERT INTO public.zaposleni
+    (ime, priimek, email, telefon, placa, datum_zaposlitve,
+     delovno_mesto_id, oddelek_id, kraj_id, izobrazba_id)
+  VALUES
+    (p_ime, p_priimek, p_email, p_telefon, p_placa, p_datum,
+     p_delovno_mesto_id, p_oddelek_id, p_kraj_id, p_izobrazba_id)
+  RETURNING id;
+$$;
+CREATE FUNCTION public.delete_employee(p_id integer) RETURNS void
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    DELETE FROM zaposleni WHERE id = p_id;
+END;
+$$;
+CREATE FUNCTION public.enforce_employee_department_match() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NEW.oddelek_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM delovno_mesto_oddelek dmo
+    WHERE dmo.delovno_mesto_id = NEW.delovno_mesto_id
+      AND dmo.oddelek_id = NEW.oddelek_id
+  ) THEN
+    RAISE EXCEPTION 'Oddelek % ni dovoljen za delovno mesto %', NEW.oddelek_id, NEW.delovno_mesto_id;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+CREATE FUNCTION public.get_all_employees() RETURNS TABLE(id integer, ime character varying, priimek character varying, email character varying, telefon character varying, placa real, datum_zaposlitve date, delovno_mesto character varying, oddelek character varying, kraj character varying, izobrazba character varying)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    z.id,
+    z.ime,
+    z.priimek,
+    z.email,
+    z.telefon,
+    z.placa,
+    z.datum_zaposlitve,
+    dm.naziv AS delovno_mesto,
+    o.ime    AS oddelek,
+    k.ime    AS kraj,
+    i.naziv  AS izobrazba
+  FROM zaposleni z
+  JOIN delovna_mesta dm ON z.delovno_mesto_id = dm.id
+  LEFT JOIN oddelki o   ON z.oddelek_id = o.id
+  LEFT JOIN kraji k     ON z.kraj_id = k.id
+  LEFT JOIN "Izobrazba" i ON z.izobrazba_id = i.id
+  ORDER BY z.priimek, z.ime;
+END;
+$$;
+
+CREATE FUNCTION public.get_delovna_mesta() RETURNS TABLE(id integer, naziv text)
+    LANGUAGE sql
+    AS $$
+    SELECT id, naziv FROM delovna_mesta ORDER BY naziv;
+$$;
+
+
+CREATE FUNCTION public.get_employee_by_id(p_id integer) RETURNS TABLE(ime text, priimek text, email text, telefon text, placa numeric, datum_zaposlitve date, delovno_mesto_id integer, oddelek_id integer, kraj_id integer)
+    LANGUAGE sql
+    AS $$
+SELECT
+  z.ime,
+  z.priimek,
+  z.email,
+  z.telefon,
+  z.placa,
+  z.datum_zaposlitve,
+  z.delovno_mesto_id,
+  z.oddelek_id,
+  z.kraj_id
+FROM zaposleni z
+WHERE z.id = p_id;
+$$;
+
+CREATE FUNCTION public.get_izobrazba() RETURNS TABLE(id integer, naziv text)
+    LANGUAGE sql
+    AS $$
+SELECT i.id, i.naziv::text AS naziv
+FROM "Izobrazba" i
+ORDER BY i.id;
+$$;
+
+CREATE FUNCTION public.get_kraji() RETURNS TABLE(id integer, ime text)
+    LANGUAGE sql
+    AS $$
+SELECT k.id, k.ime::text AS ime
+FROM kraji k
+ORDER BY k.ime;
+$$;
+
+CREATE FUNCTION public.get_oddelki(p_delovno_mesto_id integer) RETURNS TABLE(id integer, naziv text)
+    LANGUAGE sql
+    AS $$
+SELECT o.id, o.ime::text AS naziv
+FROM delovno_mesto_oddelek dmo
+JOIN oddelki o ON o.id = dmo.oddelek_id
+WHERE dmo.delovno_mesto_id = p_delovno_mesto_id
+ORDER BY o.ime;
+$$;
+
+CREATE FUNCTION public.get_settings(p_prefix text) RETURNS TABLE(name text, value text)
+    LANGUAGE sql
+    AS $$
+    SELECT s.name, s.value
+    FROM public.settings s
+    WHERE s.name LIKE (p_prefix || '%')
+    ORDER BY s.name;
+$$;
+
+CREATE FUNCTION public.log_zaposleni_changes() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  INSERT INTO log_akcij(akcija, uporabnik, "timestamp")
+  VALUES (
+    TG_OP || ' zaposleni id=' || COALESCE(NEW.id, OLD.id),
+    current_user,
+    now()
+  );
+
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE FUNCTION public.login_admin(p_username character varying) RETURNS TABLE(password character varying, email character varying)
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT au.password, au.email 
+    FROM admin_users au 
+    WHERE au.username = p_username;
+END;
+$$;
+
+CREATE FUNCTION public.register_admin(p_username text, p_password text, p_email text) RETURNS boolean
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM admin_users WHERE username = p_username) THEN
+        RETURN FALSE;
+    END IF;
+
+    INSERT INTO admin_users(username, password, email)
+    VALUES (p_username, p_password, p_email);
+
+    RETURN TRUE;
+END;
+$$;
+
+
+
+
+CREATE FUNCTION public.trg_check_datum_zaposlitve() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NEW.datum_zaposlitve > CURRENT_DATE THEN
+    RAISE EXCEPTION USING
+      ERRCODE = 'P0001',
+      MESSAGE = 'Datum zaposlitve ne sme biti v prihodnosti 6.';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+CREATE FUNCTION public.trg_check_placa() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NEW.placa < 0 THEN
+    RAISE EXCEPTION 'Plača ne sme biti negativna!';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE FUNCTION public.trg_fix_future_datum_zaposlitve() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NEW.datum_zaposlitve > CURRENT_DATE THEN
+  NEW.datum_zaposlitve = CURRENT_DATE;
+
+  INSERT INTO log_akcij(akcija, uporabnik, "timestamp")
+  VALUES ('POPRAAVLJEN DATUM ZAPOSLITVE (AUTO)', current_user, now());
+END IF;
+
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE FUNCTION public.trg_fix_negative_placa() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF NEW.placa < 0 THEN
+    -- nastavi na 1000
+    NEW.placa := 1000;
+
+    -- zapiši v log
+    INSERT INTO log_akcij(akcija, uporabnik, "timestamp")
+    VALUES (
+      'NEGATIVNA PLAČA – nastavljena na 1000 (zaposleni id=' || COALESCE(NEW.id, OLD.id) || ')',
+      current_user,
+      now()
+    );
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+CREATE FUNCTION public.update_employee(p_id integer, p_ime character varying, p_priimek character varying, p_email character varying, p_telefon character varying, p_placa numeric, p_datum date, p_delovno_mesto_id integer, p_oddelek_id integer, p_kraj_id integer, p_izobrazba_id integer) RETURNS void
+    LANGUAGE sql
+    AS $$
+UPDATE zaposleni
+SET ime = p_ime,
+    priimek = p_priimek,
+    email = p_email,
+    telefon = p_telefon,
+    placa = p_placa,
+    datum_zaposlitve = p_datum,
+    delovno_mesto_id = p_delovno_mesto_id,
+    oddelek_id = p_oddelek_id,
+    kraj_id = p_kraj_id,
+    izobrazba_id = p_izobrazba_id
+WHERE id = p_id;
+$$;
+
+
+
+
+
+
+CREATE FUNCTION public.trg_fix_future_datum_zaposlitve() RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NEW.datum_zaposlitve > CURRENT_DATE THEN
+    NEW.datum_zaposlitve = CURRENT_DATE;
+
+    INSERT INTO log_akcij(akcija, uporabnik, "timestamp")
+    VALUES ('POPRAAVLJEN DATUM ZAPOSLITVE (AUTO)', current_user, now());
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+
+CREATE FUNCTION public.trg_fix_negative_placa() RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NEW.placa < 0 THEN
+    NEW.placa := 1000;
+
+    INSERT INTO log_akcij(akcija, uporabnik, "timestamp")
+    VALUES (
+      'NEGATIVNA PLAČA – nastavljena na 1000 (zaposleni id=' || COALESCE(NEW.id, OLD.id) || ')',
+      current_user,
+      now()
+    );
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+
+CREATE FUNCTION public.enforce_employee_department_match() RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NEW.oddelek_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM delovno_mesto_oddelek dmo
+    WHERE dmo.delovno_mesto_id = NEW.delovno_mesto_id
+      AND dmo.oddelek_id = NEW.oddelek_id
+  ) THEN
+    RAISE EXCEPTION 'Oddelek % ni dovoljen za delovno mesto %',
+      NEW.oddelek_id, NEW.delovno_mesto_id;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+
+
+
+
+
