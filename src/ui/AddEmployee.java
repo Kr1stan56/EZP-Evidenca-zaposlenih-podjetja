@@ -139,7 +139,16 @@ public class AddEmployee extends JDialog {
         field.setPreferredSize(new Dimension(200, 35));
         return field;
     }
-
+    public void refreshUI() {
+        SwingUtilities.invokeLater(() -> {
+            Container contentPane = getContentPane();
+            removeAll();
+            initUI();
+            loadCombos(); // Ponovno naloži podatke iz combo boxov
+            revalidate();
+            repaint();
+        });
+    }
     private JComboBox<Item> createComboBox() {
         JComboBox<Item> combo = new JComboBox<>();
         combo.setFont(new Font("Arial", Font.PLAIN, 14));

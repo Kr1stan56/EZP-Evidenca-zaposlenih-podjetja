@@ -164,7 +164,7 @@ public class MainWindow extends JFrame {
         dashboardPanel.setOpaque(false);
         dashboardPanel.setLayout(new BoxLayout(dashboardPanel, BoxLayout.Y_AXIS));
 
-        lblDashboard = new JLabel("DASHBOARD");
+        lblDashboard = new JLabel("NADZORNA PLOŠČA");
         lblDashboard.setFont(UiConfig.FONT_H1_BOLD);
         lblDashboard.setForeground(UiConfig.TEXT_ACCENT);
         lblDashboard.setAlignmentX(Component.LEFT_ALIGNMENT);

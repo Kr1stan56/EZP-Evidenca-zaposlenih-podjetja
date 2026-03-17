@@ -395,7 +395,7 @@ public class AppController {
 
                 loginWindow.dispose();
                 loadUiConfig();
-                new MainWindow(this, userEmail, username);
+                //new MainWindow(this, userEmail, username);
             } else {
                 JOptionPane.showMessageDialog(loginWindow,
                         "Napačno uporabniško ime ali geslo.\n\n" +
